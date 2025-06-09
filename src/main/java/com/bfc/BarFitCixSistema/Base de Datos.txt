@@ -1,0 +1,118 @@
+CREATE DATABASE IF NOT EXISTS basesistbarfitcix_v1_7;
+USE basesistbarfitcix_v1_7;
+
+-- Tabla rol
+CREATE TABLE rol (
+  id_rol INT PRIMARY KEY, -- Este Id de genera solo para " ADMIN " " EMPLEADO"
+  desc_rol VARCHAR(255) NOT NULL
+);
+
+-- Tabla empleado
+CREATE TABLE empleado (
+  id_empleado INT PRIMARY KEY,
+  nom_empleado VARCHAR(100) NOT NULL,
+  ema_corporativo VARCHAR(255) NOT NULL,
+  fec_ingreso TIMESTAMP NOT NULL,
+  fec_salida TIMESTAMP NULL,
+  activo BOOLEAN,
+  id_rol INT NOT NULL, -- Ya generado antes
+  FOREIGN KEY (id_rol) REFERENCES rol(id_rol)
+);
+
+-- Tabla empresa
+CREATE TABLE empresa (
+  id_info_empresa INT PRIMARY KEY,
+  nom_empresa VARCHAR(255) NOT NULL,
+  dir_empresa VARCHAR(255) NOT NULL,
+  tel_empresa VARCHAR(50) NOT NULL,
+  cor_empresa VARCHAR(100) NOT NULL,
+  logo_empresa VARCHAR(255) NOT NULL,
+  fec_modificacion_info TIMESTAMP NOT NULL,
+  id_empleado INT NOT NULL, -- Esto sale del login
+  FOREIGN KEY (id_empleado) REFERENCES empleado(id_empleado)
+);
+
+-- Tabla informe
+CREATE TABLE informe (
+  id_informe INT PRIMARY KEY,
+  fec_informe TIMESTAMP NOT NULL,
+  link_informe VARCHAR(255) NOT NULL,
+  nom_informe VARCHAR(255) NOT NULL,
+  id_empleado INT NOT NULL, -- Esto sale del login
+  FOREIGN KEY (id_empleado) REFERENCES empleado(id_empleado)
+);
+
+-- Tabla insumo
+CREATE TABLE insumo (
+  id_insumo INT PRIMARY KEY,
+  nom_insumo VARCHAR(100) NOT NULL
+);
+
+-- Tabla tipo_cantidad
+CREATE TABLE tipo_cantidad (
+  id_tipo_cantidad INT PRIMARY KEY,
+  nom_cantidad VARCHAR(20) NOT NULL
+);
+
+-- Tabla producto
+CREATE TABLE producto (
+  id_producto INT PRIMARY KEY,
+  nom_producto VARCHAR(100) NOT NULL
+);
+
+-- Tabla producto_insumo
+CREATE TABLE producto_insumo (
+  id_producto INT, -- Asocian
+  id_insumo INT, -- Estos dos
+  cant_por_insumo FLOAT NOT NULL,
+  id_tipo_cantidad INT NOT NULL, -- Solo se Referencia para el nombre tipo cantidad
+  PRIMARY KEY (id_producto, id_insumo),
+  FOREIGN KEY (id_producto) REFERENCES producto(id_producto),
+  FOREIGN KEY (id_insumo) REFERENCES insumo(id_insumo),
+  FOREIGN KEY (id_tipo_cantidad) REFERENCES tipo_cantidad(id_tipo_cantidad)
+);
+
+-- Tabla producto_final (historial de precios por producto)
+CREATE TABLE producto_final (
+  id_precio_producto INT PRIMARY KEY,  -- Se genera a partir de id producto para asociar un nuevo producto final con precio
+  precio_de_productos FLOAT NOT NULL,
+  fec_inicio TIMESTAMP NOT NULL,
+  fec_fin DATE NULL,
+  id_producto INT NOT NULL,
+  FOREIGN KEY (id_producto) REFERENCES producto(id_producto)
+);
+
+-- Tabla pedido (MODIFICADO: Se eliminó id_boleta y su clave foránea para romper la dependencia circular)
+CREATE TABLE pedido (
+  id_pedido INT PRIMARY KEY,
+  mesa INT NOT NULL,
+  sala VARCHAR(20),
+  estado ENUM('pendiente', 'cancelado') NOT NULL
+);
+
+-- Tabla boleta
+CREATE TABLE boleta (
+  id_boleta INT PRIMARY KEY,
+  fec_boleta TIMESTAMP NOT NULL,
+  hora_boleta TIMESTAMP NOT NULL,
+  nom_cliente VARCHAR(255) NOT NULL,
+  dni_cliente INT NOT NULL,
+  fec_pago TIMESTAMP NOT NULL,
+  monto_pago FLOAT NOT NULL,
+  met_pago VARCHAR(255) NOT NULL,
+  id_empleado INT NOT NULL, -- Esto sale del login
+  id_pedido INT NOT NULL ,  -- Esto ya se genero antes
+  FOREIGN KEY (id_empleado) REFERENCES empleado(id_empleado),
+  FOREIGN KEY (id_pedido) REFERENCES pedido(id_pedido) -- Esta clave foránea ahora es válida ya que 'pedido' se puede crear primero.
+);
+
+-- Tabla subtotal
+CREATE TABLE subtotal (
+  id_pedido INT NOT NULL, -- Se genera a partir del producto final y la cantidad
+  id_producto_final INT NOT NULL,
+  cant_num_prod INT,
+  comentario VARCHAR(255),
+  PRIMARY KEY (id_pedido, id_producto_final),
+  FOREIGN KEY (id_pedido) REFERENCES pedido(id_pedido),
+  FOREIGN KEY (id_producto_final) REFERENCES producto_final(id_precio_producto)
+);
