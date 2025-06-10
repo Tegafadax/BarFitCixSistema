@@ -1,27 +1,32 @@
-CREATE DATABASE IF NOT EXISTS basesistbarfitcix_v1_7;
-USE basesistbarfitcix_v1_7;
+CREATE DATABASE IF NOT EXISTS basesistbarfitcix_v1_8;
+USE basesistbarfitcix_v1_8;
 
 -- Tabla rol
 CREATE TABLE rol (
-  id_rol INT PRIMARY KEY, -- Este Id de genera solo para " ADMIN " " EMPLEADO"
+  id_rol INT PRIMARY KEY , -- Este Id de genera solo para " ADMIN " " EMPLEADO"
   desc_rol VARCHAR(255) NOT NULL
 );
+INSERT INTO rol (id_rol, desc_rol) VALUES (1, 'ADMIN');
+INSERT INTO rol (id_rol, desc_rol) VALUES (2, 'EMPLEADO');
+SELECT * FROM rol;
 
 -- Tabla empleado
 CREATE TABLE empleado (
-  id_empleado INT PRIMARY KEY,
+  id_empleado INT PRIMARY KEY AUTO_INCREMENT,
   nom_empleado VARCHAR(100) NOT NULL,
   ema_corporativo VARCHAR(255) NOT NULL,
-  fec_ingreso TIMESTAMP NOT NULL,
+  fec_ingreso TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   fec_salida TIMESTAMP NULL,
   activo BOOLEAN,
+  contrasena VARCHAR(255),
   id_rol INT NOT NULL, -- Ya generado antes
   FOREIGN KEY (id_rol) REFERENCES rol(id_rol)
 );
+SELECT * FROM empleado;
 
 -- Tabla empresa
 CREATE TABLE empresa (
-  id_info_empresa INT PRIMARY KEY,
+  id_info_empresa INT PRIMARY KEY AUTO_INCREMENT,
   nom_empresa VARCHAR(255) NOT NULL,
   dir_empresa VARCHAR(255) NOT NULL,
   tel_empresa VARCHAR(50) NOT NULL,
@@ -34,7 +39,7 @@ CREATE TABLE empresa (
 
 -- Tabla informe
 CREATE TABLE informe (
-  id_informe INT PRIMARY KEY,
+  id_informe INT PRIMARY KEY AUTO_INCREMENT,
   fec_informe TIMESTAMP NOT NULL,
   link_informe VARCHAR(255) NOT NULL,
   nom_informe VARCHAR(255) NOT NULL,
@@ -44,19 +49,19 @@ CREATE TABLE informe (
 
 -- Tabla insumo
 CREATE TABLE insumo (
-  id_insumo INT PRIMARY KEY,
+  id_insumo INT PRIMARY KEY AUTO_INCREMENT,
   nom_insumo VARCHAR(100) NOT NULL
 );
 
 -- Tabla tipo_cantidad
 CREATE TABLE tipo_cantidad (
-  id_tipo_cantidad INT PRIMARY KEY,
+  id_tipo_cantidad INT PRIMARY KEY AUTO_INCREMENT,
   nom_cantidad VARCHAR(20) NOT NULL
 );
 
 -- Tabla producto
 CREATE TABLE producto (
-  id_producto INT PRIMARY KEY,
+  id_producto INT PRIMARY KEY AUTO_INCREMENT,
   nom_producto VARCHAR(100) NOT NULL
 );
 
@@ -72,9 +77,9 @@ CREATE TABLE producto_insumo (
   FOREIGN KEY (id_tipo_cantidad) REFERENCES tipo_cantidad(id_tipo_cantidad)
 );
 
--- Tabla producto_final (historial de precios por producto)
+-- Tabla producto_final (historial de precios por producto) REVISAR
 CREATE TABLE producto_final (
-  id_precio_producto INT PRIMARY KEY,  -- Se genera a partir de id producto para asociar un nuevo producto final con precio
+  id_precio_producto INT PRIMARY KEY AUTO_INCREMENT,  -- Se genera a partir de id producto para asociar un nuevo producto final con precio
   precio_de_productos FLOAT NOT NULL,
   fec_inicio TIMESTAMP NOT NULL,
   fec_fin DATE NULL,
