@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BarFitCIX - Administración de Usuarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body>
+<div class="dashboard-container">
+    <div class="sidebar expanded" id="sidebar"> <div class="sidebar-header">
+        <div class="sidebar-brand-container">
+            <img src="/images/logo.jpg" alt="BarFitCIX Logo" class="sidebar-logo-img">
+            <span class="sidebar-title">BarFitCIX</span> </div>
+        <div class="user-info">
+            <h5>Bienvenid@</h5>
+            <small>Nombre de Usuario</small>
+        </div>
+        <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
+            <i class="bi bi-chevron-left"></i> </button>
+    </div>
+
+        <ul class="sidebar-nav">
+            <li>
+                <a href="/dashboard">
+                    <i class="bi bi-door-open"></i>
+                    <span>SALAS</span>
+                </a>
+            </li>
+            <li>
+                <a href="/historial-pedidos">
+                    <i class="bi bi-list-check"></i>
+                    <span>PEDIDOS</span>
+                </a>
+            </li>
+            <li>
+                <a href="/platos">
+                    <i class="bi bi-cup-hot"></i>
+                    <span>PLATOS</span>
+                </a>
+            </li>
+            <li>
+                <a href="/reportes">
+                    <i class="bi bi-graph-up"></i>
+                    <span>REPORTE</span>
+                </a>
+            </li>
+            <li>
+                <a href="/configuracion" class="active"> <i class="bi bi-gear"></i>
+                    <span>CONFIGURACIÓN</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="top-header">
+            <div></div> <div class="datetime-info">
+            <h2 class="current-time" id="currentTime">04:00 PM</h2>
+            <p class="current-date" id="currentDate">12 DE MAYO 2025</p>
+        </div>
+            <div class="user-actions">
+                <div class="user-avatar">
+                    <i class="bi bi-person"></i>
+                </div>
+                <a href="/" class="btn btn-dark">CERRAR SESIÓN</a>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="config-tabs">
+                <ul class="nav nav-tabs" id="configTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" href="/configuracion">
+                            INFORMACIÓN
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" href="/configuracion-salas"> SALAS
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" href="/usuarios"> USUARIOS
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="users-header">
+                        <h4 class="mb-0">ADMINISTRACIÓN DE USUARIOS</h4>
+                        <button class="btn new-user-btn" data-bs-toggle="modal" data-bs-target="#newUserModal">
+                            <i class="bi bi-plus-circle"></i>
+                            NUEVO USUARIO
+                        </button>
+                    </div>
+
+                    <div class="users-table">
+                        <table class="table table-borderless mb-0">
+                            <thead>
+                            <tr>
+                                <th>USUARIO</th>
+                                <th>CORREO</th>
+                                <th>ROL</th>
+                                <th>ESTADO</th>
+                                <th>ACCIONES</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td><strong>ADMIN</strong></td>
+                                <td>ADMIN@GMAIL.COM</td>
+                                <td><span class="role-badge role-administrador">ADMINISTRADOR</span></td>
+                                <td><span class="status-badge status-activo">ACTIVO</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-edit" onclick="editUser('ADMIN', 'admin@gmail.com', 'ADMINISTRADOR', 'ACTIVO')" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-delete" onclick="deleteUser('ADMIN')" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>USER1</strong></td>
+                                <td>USER1@GMAIL.COM</td>
+                                <td><span class="role-badge role-empleado">EMPLEADO</span></td>
+                                <td><span class="status-badge status-activo">ACTIVO</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-edit" onclick="editUser('USER1', 'user1@gmail.com', 'EMPLEADO', 'ACTIVO')" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-delete" onclick="deleteUser('USER1')" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>USER2</strong></td>
+                                <td>USER2@GMAIL.COM</td>
+                                <td><span class="role-badge role-empleado">EMPLEADO</span></td>
+                                <td><span class="status-badge status-activo">ACTIVO</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-edit" onclick="editUser('USER2', 'user2@gmail.com', 'EMPLEADO', 'ACTIVO')" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-delete" onclick="deleteUser('USER2')" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>USER3</strong></td>
+                                <td>USER3@GMAIL.COM</td>
+                                <td><span class="role-badge role-empleado">EMPLEADO</span></td>
+                                <td><span class="status-badge status-activo">ACTIVO</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-edit" onclick="editUser('USER3', 'user3@gmail.com', 'EMPLEADO', 'ACTIVO')" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-delete" onclick="deleteUser('USER3')" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>USER4</strong></td>
+                                <td>USER4@GMAIL.COM</td>
+                                <td><span class="role-badge role-empleado">EMPLEADO</span></td>
+                                <td><span class="status-badge status-inactivo">INACTIVO</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-edit" onclick="editUser('USER4', 'user4@gmail.com', 'EMPLEADO', 'INACTIVO')" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-delete" onclick="deleteUser('USER4')" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newUserModal" tabindex="-1" aria-labelledby="newUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newUserModalLabel">Nuevo Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <div class="mb-3">
+                        <label for="userName" class="form-label">Usuario</label>
+                        <input type="text" class="form-control" id="userName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="userEmail" class="form-label">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="userEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="userPassword" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="userPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="userRole" class="form-label">Rol</label>
+                        <select class="form-control" id="userRole" required>
+                            <option value="">Seleccionar rol</option>
+                            <option value="ADMINISTRADOR">Administrador</option>
+                            <option value="EMPLEADO">Empleado</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="userStatus" class="form-label">Estado</label>
+                        <select class="form-control" id="userStatus" required>
+                            <option value="ACTIVO">Activo</option>
+                            <option value="INACTIVO">Inactivo</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveUser()">Guardar Usuario</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/app.js"></script>
+<script>
+    function editUser(usuario, correo, rol, estado) {
+        document.getElementById('newUserModalLabel').textContent = 'Editar Usuario'; // Cambia el título del modal
+        document.getElementById('userName').value = usuario;
+        document.getElementById('userEmail').value = correo;
+        // No se debe pre-rellenar la contraseña por seguridad
+        document.getElementById('userPassword').value = ''; // Vaciar la contraseña al editar
+        document.getElementById('userRole').value = rol;
+        document.getElementById('userStatus').value = estado;
+
+        const modal = new bootstrap.Modal(document.getElementById('newUserModal'));
+        modal.show();
+    }
+
+    function deleteUser(usuario) {
+        if (confirm(`¿Está seguro de eliminar el usuario ${usuario}?`)) {
+            alert(`Usuario ${usuario} eliminado exitosamente`);
+            // Aquí se implementaría la lógica para eliminar el usuario en tu backend
+            // Por ejemplo, recargar la tabla de usuarios después de la eliminación
+        }
+    }
+
+    function saveUser() {
+        const usuario = document.getElementById('userName').value;
+        const correo = document.getElementById('userEmail').value;
+        const password = document.getElementById('userPassword').value; // Obtener la contraseña
+        const rol = document.getElementById('userRole').value;
+        const estado = document.getElementById('userStatus').value;
+
+        if (usuario && correo && password && rol && estado) { // Validar todos los campos
+            alert(`Usuario ${usuario} guardado exitosamente`);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('newUserModal'));
+            modal.hide();
+
+            // Limpiar formulario y resetear título para el próximo "Nuevo Usuario"
+            document.getElementById('userForm').reset();
+            document.getElementById('newUserModalLabel').textContent = 'Nuevo Usuario';
+        } else {
+            alert('Por favor complete todos los campos obligatorios');
+        }
+    }
+
+    // Event listener para limpiar el formulario cuando se abre el modal para "Nuevo Usuario"
+    document.getElementById('newUserModal').addEventListener('show.bs.modal', function (event) {
+        // Solo limpiar si no es un botón de "editar" el que dispara el modal
+        if (!event.relatedTarget || !event.relatedTarget.classList.contains('btn-edit')) {
+            document.getElementById('userForm').reset();
+            document.getElementById('newUserModalLabel').textContent = 'Nuevo Usuario';
+        }
+    });
+</script>
+</body>
+</html>
