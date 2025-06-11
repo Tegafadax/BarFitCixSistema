@@ -1,4 +1,4 @@
-package com.bfc.BarFitCixSistema.model.DTO;
+package com.bfc.BarFitCixSistema.model.DTO.EmpleadoDTO;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

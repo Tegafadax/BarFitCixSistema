@@ -1,8 +1,8 @@
 package com.bfc.BarFitCixSistema.controller;
 
-import com.bfc.BarFitCixSistema.model.DTO.ActualizarEmpleadoCompletoDTO;
-import com.bfc.BarFitCixSistema.model.DTO.CrearEmpleadoDTO;
-import com.bfc.BarFitCixSistema.model.DTO.GETEmpleadoDTO;
+import com.bfc.BarFitCixSistema.model.DTO.EmpleadoDTO.ActualizarEmpleadoCompletoDTO;
+import com.bfc.BarFitCixSistema.model.DTO.EmpleadoDTO.CrearEmpleadoDTO;
+import com.bfc.BarFitCixSistema.model.DTO.EmpleadoDTO.GETEmpleadoDTO;
 import com.bfc.BarFitCixSistema.model.service.EmpleadoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
