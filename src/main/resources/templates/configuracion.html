@@ -494,13 +494,7 @@
                         <label for="insumoUnit" class="form-label">Tipo de Unidad</label>
                         <select class="form-control" id="insumoUnit" required>
                             <option value="">Seleccionar...</option>
-                            <option value="kg">Kilogramo (kg)</option>
-                            <option value="g">Gramo (g)</option>
-                            <option value="Lt">Litro (Lt)</option>
-                            <option value="ml">Mililitro (ml)</option>
-                            <option value="unidad">Unidad</option>
-                            <option value="taza">Taza</option>
-                            <option value="cucharada">Cucharada</option>
+                            <!-- Las opciones se cargarán dinámicamente desde la API -->
                         </select>
                     </div>
                 </form>
@@ -633,6 +627,31 @@
     // Cargar empleados al iniciar
     document.addEventListener('DOMContentLoaded', () => {
         cargarEmpleados();
+    });
+</script>
+<script>
+    // Funcionalidad de búsqueda en tiempo real (opcional)
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInsumos');
+        if (searchInput) {
+            let searchTimeout;
+
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const searchTerm = this.value.trim();
+
+                // Debounce la búsqueda para evitar demasiadas llamadas a la API
+                searchTimeout = setTimeout(async () => {
+                    if (searchTerm.length >= 2) {
+                        // Buscar si hay al menos 2 caracteres
+                        await buscarInsumosPorNombre(searchTerm);
+                    } else if (searchTerm.length === 0) {
+                        // Si está vacío, cargar todos
+                        await loadInsumos();
+                    }
+                }, 300); // Esperar 300ms después del último input
+            });
+        }
     });
 </script>
 <!-- Enlace a Bootstrap JS (bundle incluye Popper) -->

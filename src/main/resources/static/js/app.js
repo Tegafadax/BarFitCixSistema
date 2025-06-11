@@ -961,18 +961,27 @@ function openReport(reportId) {
 
 
 // --- Funciones de Gestión de Insumos (desde configuracion.html - NUEVA SECCIÓN) ---
-let insumosData = []; // Almacenará los insumos cargados/creados
+let insumosData = []; // Almacenará los insumos cargados desde la API
+let tiposCantidadData = []; // Almacenará los tipos de cantidad
+let insumoEditandoId = null; // Para controlar si estamos editando
 
-function loadInsumos() {
-    // Simular carga de insumos desde una DB sin stock
-    insumosData = [
-        { id: 1, name: "Arroz", unit: "kg" },
-        { id: 2, name: "Cebolla", unit: "unidad" },
-        { id: 3, name: "Tomate", unit: "kg" },
-        { id: 4, name: "Pollo", unit: "kg" },
-        { id: 5, name: "Aceite", unit: "Lt" }
-    ];
-    updateInsumosManagementTable();
+// Cargar insumos desde la API de Spring Boot
+async function loadInsumos() {
+    try {
+        const response = await fetch('http://localhost:8080/api/insumo/listar');
+        if (!response.ok) throw new Error('Error al cargar insumos');
+
+        const data = await response.json(); // Recibe GETInsumoDTO[]
+        insumosData = data;
+        updateInsumosManagementTable();
+
+    } catch (error) {
+        console.error('Error al cargar insumos:', error);
+        alert('No se pudieron cargar los insumos desde el servidor.');
+        // Fallback: mostrar tabla vacía
+        insumosData = [];
+        updateInsumosManagementTable();
+    }
 }
 
 function updateInsumosManagementTable() {
@@ -980,27 +989,44 @@ function updateInsumosManagementTable() {
     if (!tbody) return;
 
     tbody.innerHTML = '';
+
     if (insumosData.length === 0) {
         tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No hay insumos registrados.</td></tr>';
         return;
     }
+
     insumosData.forEach(insumo => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${insumo.name}</td>
-            <td>${insumo.unit}</td>
+            <td>${insumo.nomInsumo}</td>
+            <td>${insumo.nomTipoCantidad}</td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn btn-edit btn-sm" onclick="editInsumo(${insumo.id})" title="Editar">
+                    <button class="btn btn-edit btn-sm" data-id="${insumo.idInsumo}" data-action="edit" title="Editar">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-delete btn-sm" onclick="deleteInsumo(${insumo.id})" title="Eliminar">
+                    <button class="btn btn-delete btn-sm" data-id="${insumo.idInsumo}" data-action="delete" title="Eliminar">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
             </td>
         `;
         tbody.appendChild(row);
+    });
+
+    // Agregar event listeners a los botones DESPUÉS de crear las filas
+    tbody.addEventListener('click', function(e) {
+        const button = e.target.closest('button');
+        if (!button) return;
+
+        const id = parseInt(button.dataset.id);
+        const action = button.dataset.action;
+
+        if (action === 'edit') {
+            editInsumo(id);
+        } else if (action === 'delete') {
+            deleteInsumo(id);
+        }
     });
 }
 
@@ -1009,59 +1035,167 @@ function clearInsumoForm() {
     document.getElementById('insumoName').value = '';
     document.getElementById('insumoUnit').value = '';
     document.getElementById('insumoModalLabel').textContent = 'Nuevo Insumo';
+    insumoEditandoId = null;
 }
 
-function saveInsumo() {
-    const id = document.getElementById('insumoId').value;
-    const name = document.getElementById('insumoName').value;
-    const unit = document.getElementById('insumoUnit').value;
+async function saveInsumo() {
+    const nombre = document.getElementById('insumoName').value.trim();
+    const idTipoCantidad = parseInt(document.getElementById('insumoUnit').value);
 
-    if (name && unit) {
-        if (id) { // Edición
-            const index = insumosData.findIndex(insumo => insumo.id == id);
-            if (index !== -1) {
-                insumosData[index] = { id: parseInt(id), name, unit };
-                // NOTA: Reemplazar 'alert' con un modal personalizado.
-                window.alert(`Insumo '${name}' actualizado exitosamente.`);
-            }
-        } else { // Nuevo
-            const newId = insumosData.length > 0 ? Math.max(...insumosData.map(i => i.id)) + 1 : 1;
-            insumosData.push({ id: newId, name, unit });
-            // NOTA: Reemplazar 'alert' con un modal personalizado.
-            window.alert(`Insumo '${name}' agregado exitosamente.`);
+    // Validaciones básicas
+    if (!nombre) {
+        alert('Por favor, ingrese el nombre del insumo.');
+        return;
+    }
+
+    if (!idTipoCantidad) {
+        alert('Por favor, seleccione un tipo de unidad.');
+        return;
+    }
+
+    const esEdicion = !!insumoEditandoId;
+
+    try {
+        let response;
+
+        if (esEdicion) {
+            // Actualizar insumo existente
+            const actualizarDTO = {
+                idInsumo: insumoEditandoId,
+                nomInsumo: nombre,
+                idTipoCantidad: idTipoCantidad
+            };
+
+            response = await fetch('http://localhost:8080/api/insumo/actualizar', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(actualizarDTO)
+            });
+        } else {
+            // Crear nuevo insumo
+            const crearDTO = {
+                nomInsumo: nombre,
+                idTipoCantidad: idTipoCantidad
+            };
+
+            response = await fetch('http://localhost:8080/api/insumo/crear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(crearDTO)
+            });
         }
-        updateInsumosManagementTable();
-        const modal = bootstrap.Modal.getInstance(document.getElementById('insumoModal'));
-        modal.hide();
-        clearInsumoForm();
-    } else {
-        // NOTA: Reemplazar 'alert' con un modal personalizado.
-        window.alert('Por favor, complete todos los campos del insumo.');
+
+        if (response.ok) {
+            const resultado = await response.json(); // GETInsumoDTO
+            alert(esEdicion ?
+                `Insumo '${resultado.nomInsumo}' actualizado exitosamente.` :
+                `Insumo '${resultado.nomInsumo}' agregado exitosamente.`
+            );
+
+            // Cerrar modal y recargar datos
+            const modal = bootstrap.Modal.getInstance(document.getElementById('insumoModal'));
+            modal.hide();
+            clearInsumoForm();
+            await loadInsumos(); // Recargar la lista
+
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            alert(`Error: ${errorData.message || 'No se pudo guardar el insumo.'}`);
+        }
+
+    } catch (error) {
+        console.error('Error al guardar insumo:', error);
+        alert('Hubo un problema al conectarse con el servidor.');
     }
 }
 
-function editInsumo(id) {
-    const insumo = insumosData.find(i => i.id === id);
-    if (insumo) {
-        document.getElementById('insumoModalLabel').textContent = 'Editar Insumo';
-        document.getElementById('insumoId').value = insumo.id;
-        document.getElementById('insumoName').value = insumo.name;
-        document.getElementById('insumoUnit').value = insumo.unit;
+// FUNCIÓN EDITINSUMO - ÚNICA Y CORRECTA
+async function editInsumo(id) {
+    try {
+        console.log('Editando insumo ID:', id);
 
+        const insumo = insumosData.find(i => i.idInsumo === id);
+        if (!insumo) {
+            alert('Insumo no encontrado.');
+            return;
+        }
+
+        // Cambiar el título del modal
+        document.getElementById('insumoModalLabel').textContent = 'Editar Insumo';
+
+        // Llenar los campos
+        document.getElementById('insumoId').value = insumo.idInsumo;
+        document.getElementById('insumoName').value = insumo.nomInsumo;
+
+        // Establecer la variable global
+        insumoEditandoId = id;
+
+        // Cargar tipos de cantidad
+        const response = await fetch('http://localhost:8080/api/tipo-cantidad/listar');
+        if (response.ok) {
+            const data = await response.json();
+            const select = document.getElementById('insumoUnit');
+            select.innerHTML = '<option value="">Seleccionar...</option>';
+
+            data.forEach(tipo => {
+                const option = document.createElement('option');
+                option.value = tipo.idTipoCantidad;
+                option.textContent = tipo.nomCantidad;
+                select.appendChild(option);
+            });
+
+            // Seleccionar el tipo correcto
+            select.value = insumo.idTipoCantidad;
+        }
+
+        // Abrir el modal
         const modal = new bootstrap.Modal(document.getElementById('insumoModal'));
         modal.show();
+
+    } catch (error) {
+        console.error('Error al editar insumo:', error);
+        alert('Error al cargar los datos del insumo.');
     }
 }
 
-function deleteInsumo(id) {
-    const insumo = insumosData.find(i => i.id === id);
-    // NOTA: Reemplazar 'confirm' y 'alert' con modales personalizados.
-    if (insumo && window.confirm(`¿Está seguro de eliminar el insumo '${insumo.name}'?`)) {
-        insumosData = insumosData.filter(i => i.id !== id);
-        window.alert(`Insumo '${insumo.name}' eliminado exitosamente.`);
-        updateInsumosManagementTable();
+// FUNCIÓN DELETEINSUMO - NUEVA
+async function deleteInsumo(id) {
+    const insumo = insumosData.find(i => i.idInsumo === id);
+
+    if (!insumo) {
+        alert('Insumo no encontrado.');
+        return;
+    }
+
+    if (!confirm(`¿Está seguro de eliminar el insumo '${insumo.nomInsumo}'?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/insumo/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            alert(`Insumo '${insumo.nomInsumo}' eliminado exitosamente.`);
+            await loadInsumos(); // Recargar la lista
+        } else {
+            alert('No se pudo eliminar el insumo.');
+        }
+
+    } catch (error) {
+        console.error('Error al eliminar insumo:', error);
+        alert('Hubo un problema al conectarse con el servidor.');
     }
 }
+
+// Hacer funciones globales para insumos - MOVER AL FINAL DEL DOMCONTENTLOADED
+
+
 
 
 // --- Event Listeners Globales (DOMContentLoaded) ---
@@ -1181,18 +1315,24 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('splitPaymentModal').addEventListener('show.bs.modal', openSplitPaymentModal);
     }
 
-    if (document.getElementById('insumosManagementTableBody')) { // Para la tabla de gestión de insumos en configuracion.html
-        loadInsumos(); // Carga los insumos al abrir la pestaña
-        // Listener para el modal de insumos (limpiar al abrir)
-        document.getElementById('insumoModal').addEventListener('show.bs.modal', async function(event) {
-            if (!event.relatedTarget || !event.relatedTarget.classList.contains('btn-edit')) {
-                clearInsumoForm();
-            }
+   if (document.getElementById('insumosManagementTableBody')) { // Para la tabla de gestión de insumos en configuracion.html
+       loadInsumos(); // Carga los insumos al abrir la pestaña
+       // Listener para el modal de insumos (limpiar al abrir)
+       document.getElementById('insumoModal').addEventListener('show.bs.modal', async function(event) {
+           // Solo limpiar si NO es un botón de editar
+           if (!insumoEditandoId) {
+               clearInsumoForm();
+               await cargarTiposCantidad();
+           }
+           // Si es editar, no hacer nada aquí porque editInsumo ya maneja todo
+       });
 
-            // Llama a la función que llena el <select>
-            await cargarTiposCantidad();
-        });
-    }
+       // AGREGAR ESTAS LÍNEAS AQUÍ ↓
+       document.getElementById('insumoModal').addEventListener('hidden.bs.modal', function() {
+           insumoEditandoId = null;
+           document.getElementById('insumoModalLabel').textContent = 'Nuevo Insumo';
+       });
+   }
 
     if (document.getElementById('searchInput')) { // Para la tabla de historial de pedidos
         setupSearchInput('searchInput', '.table');
@@ -1290,4 +1430,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const animateElements = document.querySelectorAll(".room-card, .table-card, .card, .table-responsive, .config-tabs");
     animateElements.forEach((el) => observer.observe(el));
+   window.loadInsumos = loadInsumos;
+   window.saveInsumo = saveInsumo;
+   window.editInsumo = editInsumo;
+   window.deleteInsumo = deleteInsumo;
+   window.clearInsumoForm = clearInsumoForm;
+
 });
