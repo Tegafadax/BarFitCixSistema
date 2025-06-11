@@ -88,6 +88,10 @@ public class Empleado {
     public Boolean getActivo() {
         return activo;
     }
+    // Getter para isActivo()
+    public boolean isActivo() {
+        return activo != null && activo;
+    }
 
     public void setActivo(Boolean activo) {
         this.activo = activo;

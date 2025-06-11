@@ -27,13 +27,13 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         Rol rol = rolDAO.findByNombre(RolNombre.valueOf(dto.getRol()))
                 .orElseThrow(() -> new IllegalArgumentException("Rol inválido"));
 
-        Empleado empleado = new Empleado(
-                dto.getNom_empleado(),
-                dto.getEma_corporativo(),
-                dto.getContrasena(),
-
-                rol
-        );
+        Empleado empleado = new Empleado();
+        empleado.setNom_empleado(dto.getNombreUsuario());
+        empleado.setEma_corporativo(dto.getCorreoElectronico());
+        empleado.setContrasena(dto.getContrasena());
+        empleado.setRol(rol);
+        empleado.setFec_ingreso(LocalDateTime.now());
+        empleado.setActivo(true); // Por defecto es activo al crear
 
         empleado = empleadoDAO.save(empleado);
         return convertirAGetDTO(empleado);
@@ -42,19 +42,24 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     @Override
     public GETEmpleadoDTO actualizarEmpleado(Integer id, ActualizarEmpleadoCompletoDTO dto) {
         Empleado empleado = empleadoDAO.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Empleado no encontrado con id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Empleado no encontrado con ID: " + id));
 
-        empleado.setNom_empleado(dto.getNom_empleado());
-        empleado.setEma_corporativo(dto.getEma_corporativo());
+        if (dto.getNombreUsuario() != null) empleado.setNom_empleado(dto.getNombreUsuario());
+        if (dto.getCorreoElectronico() != null) empleado.setEma_corporativo(dto.getCorreoElectronico());
         if (dto.getContrasena() != null && !dto.getContrasena().isBlank()) {
             empleado.setContrasena(dto.getContrasena());
         }
-        Rol rol = rolDAO.findByNombre(RolNombre.valueOf(dto.getRol()))
-                .orElseThrow(() -> new IllegalArgumentException("Rol inválido"));
-        empleado.setRol(rol);
-
-        empleado.setActivo(dto.getActivo() != null ? dto.getActivo() : empleado.getActivo());
-        empleado.setFec_salida(dto.getFec_salida());
+        if (dto.getRol() != null) {
+            Rol rol = rolDAO.findByNombre(RolNombre.valueOf(dto.getRol()))
+                    .orElseThrow(() -> new IllegalArgumentException("Rol inválido"));
+            empleado.setRol(rol);
+        }
+        if (dto.getActivo() != null) {
+            empleado.setActivo(dto.getActivo());
+            if (!dto.getActivo()) {
+                empleado.setFec_salida(LocalDateTime.now()); // Marca fecha de salida si se desactiva
+            }
+        }
 
         empleado = empleadoDAO.save(empleado);
         return convertirAGetDTO(empleado);
@@ -63,10 +68,10 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     @Override
     public void eliminarEmpleado(Integer id) {
         Empleado empleado = empleadoDAO.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Empleado no encontrado con id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Empleado no encontrado con ID: " + id));
 
         empleado.setActivo(false);
-        empleado.setFec_salida(java.time.LocalDateTime.now());
+        empleado.setFec_salida(LocalDateTime.now());
         empleadoDAO.save(empleado);
     }
 
@@ -80,18 +85,17 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     @Override
     public GETEmpleadoDTO obtenerPorId(Integer id) {
         Empleado empleado = empleadoDAO.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Empleado no encontrado con id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Empleado no encontrado con ID: " + id));
         return convertirAGetDTO(empleado);
     }
 
     private GETEmpleadoDTO convertirAGetDTO(Empleado empleado) {
         GETEmpleadoDTO dto = new GETEmpleadoDTO();
-        dto.setId_empleado(empleado.getId_empleado());
-        dto.setNom_empleado(empleado.getNom_empleado());
-        dto.setEma_corporativo(empleado.getEma_corporativo());
-        dto.setFec_ingreso(empleado.getFec_ingreso());
-        dto.setFec_salida(empleado.getFec_salida());
+        dto.setId(empleado.getId_empleado());
+        dto.setNombreUsuario(empleado.getNom_empleado());
+        dto.setCorreoElectronico(empleado.getEma_corporativo());
         dto.setRol(empleado.getRol().getNombre().name());
+        dto.setEstado(empleado.isActivo() ? "ACTIVO" : "INACTIVO");
         return dto;
     }
 }

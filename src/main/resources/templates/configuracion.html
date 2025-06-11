@@ -452,9 +452,9 @@
                     </div>
                     <div class="mb-3">
                         <label for="userRole" class="form-label">Rol</label>
-                        <select class="form-control" id="userRole" required>
+                        <select class="form-control" id="userRole">
                             <option value="">Seleccionar rol</option>
-                            <option value="ADMINISTRADOR">Administrador</option>
+                            <option value="ADMIN">Administrador</option>
                             <option value="EMPLEADO">Empleado</option>
                         </select>
                     </div>
@@ -512,7 +512,129 @@
         </div>
     </div>
 </div>
+<script>
+    // Cargar empleados desde el backend
+    async function cargarEmpleados() {
+        try {
+            const response = await fetch('/api/empleados');
+            if (!response.ok) throw new Error('Error al obtener empleados');
 
+            const empleados = await response.json();
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+
+            empleados.forEach(emp => {
+                const row = `
+                    <tr>
+                        <td><strong>${emp.nombreUsuario}</strong></td>
+                        <td>${emp.correoElectronico}</td>
+                        <td><span class="role-badge role-${emp.rol.toLowerCase()}">${emp.rol}</span></td>
+                        <td><span class="status-badge status-${emp.estado.toLowerCase()}">${emp.estado}</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-edit" onclick="editarEmpleado('${emp.id}', '${emp.nombreUsuario}', '${emp.correoElectronico}', '${emp.rol}', '${emp.estado}')" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-delete" onclick="eliminarEmpleado('${emp.id}')" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+                tbody.innerHTML += row;
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    // Eliminar empleado
+    async function eliminarEmpleado(id) {
+        if (!confirm("¿Estás seguro de eliminar este empleado?")) return;
+
+        try {
+            const response = await fetch(`/api/empleados/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                alert('Empleado eliminado correctamente.');
+                cargarEmpleados(); // Recargar lista
+            } else {
+                alert('No se pudo eliminar el empleado.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    // Editar empleado
+    function editarEmpleado(id, nombre, correo, rol, estado) {
+        document.getElementById('userName').value = nombre;
+        document.getElementById('userEmail').value = correo;
+        document.getElementById('userRole').value = rol;
+        document.getElementById('userStatus').value = estado;
+
+        // Guardar ID temporalmente
+        window.usuarioEditandoId = id;
+
+        // Abrir modal
+        const modal = new bootstrap.Modal(document.getElementById('newUserModal'));
+        modal.show();
+    }
+
+    // Guardar nuevo o editar usuario
+    async function saveUser() {
+        const nombre = document.getElementById('userName').value;
+        const correo = document.getElementById('userEmail').value;
+        const contrasena = document.getElementById('userPassword').value;
+        const rol = document.getElementById('userRole').value;
+        const estado = document.getElementById('userStatus').value;
+
+        const esEdicion = !!window.usuarioEditandoId;
+
+        const dto = {
+            nombreUsuario: nombre,
+            correoElectronico: correo,
+            contrasena: contrasena || undefined,
+            rol: rol,
+            estado: estado
+        };
+
+        const url = esEdicion ? `/api/empleados/${window.usuarioEditandoId}` : '/api/empleados';
+        const method = esEdicion ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dto)
+            });
+
+            if (response.ok) {
+                alert(esEdicion ? 'Empleado actualizado.' : 'Empleado creado.');
+                bootstrap.Modal.getInstance(document.getElementById('newUserModal')).hide();
+                cargarEmpleados();
+            } else {
+                alert('Hubo un problema al guardar.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    // Asignar función global
+    window.saveUser = saveUser;
+    window.editarEmpleado = editarEmpleado;
+    window.eliminarEmpleado = eliminarEmpleado;
+
+    // Cargar empleados al iniciar
+    document.addEventListener('DOMContentLoaded', () => {
+        cargarEmpleados();
+    });
+</script>
 <!-- Enlace a Bootstrap JS (bundle incluye Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Enlace a tu archivo de JavaScript principal -->

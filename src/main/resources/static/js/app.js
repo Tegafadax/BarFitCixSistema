@@ -191,14 +191,48 @@ function loadTheme() {
 }
 
 
-// --- Funciones de Gestión de Usuarios (desde configuracion.html) ---
-function selectUser(nombre, usuario, rol) {
-  console.log(`Usuario seleccionado: ${nombre} (${usuario}) - ${rol}`);
+let usuarioEditandoId = null;
+
+// Cargar empleados desde el backend
+async function cargarEmpleados() {
+    try {
+        const response = await fetch('/api/empleados');
+        if (!response.ok) throw new Error('Error al obtener empleados');
+
+        const empleados = await response.json();
+        const tbody = document.getElementById('usersTableBody');
+        tbody.innerHTML = '';
+
+        empleados.forEach(emp => {
+            const row = `
+                <tr>
+                    <td><strong>${emp.nombreUsuario}</strong></td>
+                    <td>${emp.correoElectronico}</td>
+                    <td><span class="role-badge role-${emp.rol.toLowerCase()}">${emp.rol}</span></td>
+                    <td><span class="status-badge status-${emp.estado.toLowerCase()}">${emp.estado}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-edit" onclick="editarEmpleado('${emp.id}', '${emp.nombreUsuario}', '${emp.correoElectronico}', '${emp.rol}', '${emp.estado}')" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-delete" onclick="eliminarEmpleado('${emp.id}')" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
+            tbody.innerHTML += row;
+        });
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
 
-function editUser(usuario, correo, rol, estado) {
+// Editar empleado - abre el modal con los datos
+function editarEmpleado(id, nombre, correo, rol, estado) {
+    usuarioEditandoId = id;
     document.getElementById('newUserModalLabel').textContent = 'Editar Usuario';
-    document.getElementById('userName').value = usuario;
+    document.getElementById('userName').value = nombre;
     document.getElementById('userEmail').value = correo;
     document.getElementById('userPassword').value = '';
     document.getElementById('userRole').value = rol;
@@ -208,32 +242,80 @@ function editUser(usuario, correo, rol, estado) {
     modal.show();
 }
 
-function deleteUser(usuario) {
-    // NOTA: Reemplazar 'confirm' y 'alert' con modales personalizados.
-    if (window.confirm(`¿Está seguro de eliminar el usuario ${usuario}?`)) {
-        window.alert(`Usuario ${usuario} eliminado exitosamente`);
-    }
-}
-
-function saveUser() {
-    const usuario = document.getElementById('userName').value;
-    const correo = document.getElementById('userEmail').value;
-    const password = document.getElementById('userPassword').value;
+// Guardar nuevo o editar usuario
+async function saveUser() {
+    const nombre = document.getElementById('userName').value.trim();
+    const correo = document.getElementById('userEmail').value.trim();
+    const contrasena = document.getElementById('userPassword').value.trim();
     const rol = document.getElementById('userRole').value;
     const estado = document.getElementById('userStatus').value;
 
-    if (usuario && correo && password && rol && estado) {
-        // NOTA: Reemplazar 'alert' con un modal personalizado.
-        window.alert(`Usuario ${usuario} guardado exitosamente`);
-        const modal = bootstrap.Modal.getInstance(document.getElementById('newUserModal'));
-        modal.hide();
-        document.getElementById('userForm').reset();
-        document.getElementById('newUserModalLabel').textContent = 'Nuevo Usuario';
-    } else {
-        // NOTA: Reemplazar 'alert' con un modal personalizado.
-        window.alert('Por favor complete todos los campos obligatorios');
+    if (!nombre || !correo || !rol || !estado) {
+        alert("Por favor complete todos los campos obligatorios.");
+        return;
+    }
+
+    const dto = {
+        nombreUsuario: nombre,
+        correoElectronico: correo,
+        contrasena: contrasena || undefined,
+        rol: rol,
+        activo: estado === "ACTIVO"
+    };
+
+    const esEdicion = !!usuarioEditandoId;
+    const url = esEdicion ? `/api/empleados/${usuarioEditandoId}` : '/api/empleados';
+    const method = esEdicion ? 'PUT' : 'POST';
+
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dto)
+        });
+
+        if (response.ok) {
+            alert(esEdicion ? 'Empleado actualizado exitosamente.' : 'Empleado creado exitosamente.');
+            bootstrap.Modal.getInstance(document.getElementById('newUserModal')).hide();
+            cargarEmpleados();
+            usuarioEditandoId = null;
+            document.getElementById('userForm').reset();
+            document.getElementById('newUserModalLabel').textContent = 'Nuevo Usuario';
+        } else {
+            const errorData = await response.json();
+            alert(`Error: ${errorData.message || 'No se pudo guardar el empleado.'}`);
+        }
+    } catch (error) {
+        console.error('Error al guardar empleado:', error);
+        alert('Hubo un problema al conectarse con el servidor.');
     }
 }
+
+// Eliminar empleado
+async function eliminarEmpleado(id) {
+    if (!confirm("¿Está seguro de eliminar este empleado?")) return;
+
+    try {
+        const response = await fetch(`/api/empleados/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            alert('Empleado eliminado correctamente.');
+            cargarEmpleados(); // Recargar lista
+        } else {
+            alert('No se pudo eliminar el empleado.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Hubo un problema al conectarse con el servidor.');
+    }
+}
+
+// Asignar funciones globales para acceso desde HTML
+window.editarEmpleado = editarEmpleado;
+window.eliminarEmpleado = eliminarEmpleado;
+window.saveUser = saveUser;
 
 // --- Funciones de Gestión de Platos (desde platos.html) ---
 let currentPlatoInsumos = [];

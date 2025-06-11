@@ -1,31 +1,26 @@
 package com.bfc.BarFitCixSistema.model.DTO;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.Data;
 
-import java.time.LocalDateTime;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
- * Esta clase sirve para crear un Nuevo Empleado Por eso solo necesita nombre, email, contraseña, rol
- * @author Tegafadax
- * @version 1.0
- * @since 2025-06-09
+ * DTO para crear un nuevo empleado.
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class CrearEmpleadoDTO {
+    @NotBlank(message = "El nombre de usuario es obligatorio.")
+    private String nombreUsuario;
 
-    @NotBlank(message = "El nombre no puede estar vacío")
-    private String nom_empleado;
+    @NotBlank(message = "El correo electrónico es obligatorio.")
+    private String correoElectronico;
 
-    @NotBlank(message = "El correo corporativo no puede estar vacío")
-    @Email(message = "Debe ser un correo válido")
-    private String ema_corporativo;
-
-    @NotBlank(message = "La contraseña no puede estar vacía")
+    @NotBlank(message = "La contraseña es obligatoria.")
     private String contrasena;
 
-    @NotNull(message = "El rol no puede ser nulo")
-    private String rol; // Ej: "ADMIN" o "EMPLEADO"
-
+    @NotBlank(message = "El rol es obligatorio.")
+    private String rol;
 }
