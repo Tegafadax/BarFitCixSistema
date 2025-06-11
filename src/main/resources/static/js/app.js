@@ -1184,10 +1184,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById('insumosManagementTableBody')) { // Para la tabla de gestión de insumos en configuracion.html
         loadInsumos(); // Carga los insumos al abrir la pestaña
         // Listener para el modal de insumos (limpiar al abrir)
-        document.getElementById('insumoModal').addEventListener('show.bs.modal', function(event) {
+        document.getElementById('insumoModal').addEventListener('show.bs.modal', async function(event) {
             if (!event.relatedTarget || !event.relatedTarget.classList.contains('btn-edit')) {
                 clearInsumoForm();
             }
+
+            // Llama a la función que llena el <select>
+            await cargarTiposCantidad();
         });
     }
 
@@ -1263,7 +1266,28 @@ document.addEventListener("DOMContentLoaded", () => {
             card.addEventListener('touchmove', handleTableMove, { passive: true }); // Usar passive para no bloquear el scroll
         });
     }
+    // Cargar tipos de cantidad desde Spring Boot
+    async function cargarTiposCantidad() {
+        try {
+            const response = await fetch('http://localhost:8080/api/tipo-cantidad/listar');
+            if (!response.ok) throw new Error('Error al cargar tipos de cantidad');
 
+            const data = await response.json(); // Recibe GETTipoCantidadDTO[]
+            const select = document.getElementById('insumoUnit');
+            select.innerHTML = '<option value="">Seleccionar...</option>'; // Limpiar opciones previas
+
+            data.forEach(tipo => {
+                const option = document.createElement('option');
+                option.value = tipo.idTipoCantidad; // Usamos el ID del DTO
+                option.textContent = tipo.nomCantidad; // Nombre del tipo de cantidad
+                select.appendChild(option);
+            });
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('No se pudieron cargar los tipos de unidad.');
+        }
+    }
     const animateElements = document.querySelectorAll(".room-card, .table-card, .card, .table-responsive, .config-tabs");
     animateElements.forEach((el) => observer.observe(el));
 });
