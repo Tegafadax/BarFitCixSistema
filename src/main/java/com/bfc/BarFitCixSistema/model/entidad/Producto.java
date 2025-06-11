@@ -1,3 +1,4 @@
+// ACTUALIZACIÓN REQUERIDA EN Producto.java
 package com.bfc.BarFitCixSistema.model.entidad;
 
 import jakarta.persistence.*;
@@ -9,7 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -28,20 +29,59 @@ public class Producto implements Serializable {
     @Column(name = "nom_producto", length = 100)
     private String nomProducto;
 
-    // Relación con los precios (historial)
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ProductoPrecio> precios;
+    // CAMBIO IMPORTANTE: Configuración de cascada mejorada
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<ProductoPrecio> precios = new ArrayList<>();
 
-    // Relación con los insumos (recetas)
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    private List<ProductoInsumo> insumos;
+    // CAMBIO IMPORTANTE: Configuración de cascada mejorada
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<ProductoInsumo> insumos = new ArrayList<>();
 
-    // Método helper para obtener el precio actual
+    // Método helper mejorado para obtener el precio actual
     public ProductoPrecio getPrecioActual() {
-        return precios != null ?
-                precios.stream()
-                        .filter(p -> p.getActivo() && p.getFechaFin() == null)
-                        .findFirst()
-                        .orElse(null) : null;
+        if (precios == null || precios.isEmpty()) {
+            return null;
+        }
+
+        return precios.stream()
+                .filter(p -> Boolean.TRUE.equals(p.getActivo()) && p.getFechaFin() == null)
+                .findFirst()
+                .orElse(null);
+    }
+
+    // Métodos helper para gestionar insumos
+    public void addInsumo(ProductoInsumo productoInsumo) {
+        if (insumos == null) {
+            insumos = new ArrayList<>();
+        }
+        insumos.add(productoInsumo);
+        productoInsumo.setProducto(this);
+    }
+
+    public void removeInsumo(ProductoInsumo productoInsumo) {
+        if (insumos != null) {
+            insumos.remove(productoInsumo);
+            productoInsumo.setProducto(null);
+        }
+    }
+
+    // Métodos helper para gestionar precios
+    public void addPrecio(ProductoPrecio precio) {
+        if (precios == null) {
+            precios = new ArrayList<>();
+        }
+        precios.add(precio);
+        precio.setProducto(this);
+    }
+
+    // Override toString para evitar referencias circulares
+    @Override
+    public String toString() {
+        return "Producto{" +
+                "idProducto=" + idProducto +
+                ", nomProducto='" + nomProducto + '\'' +
+                ", cantidadInsumos=" + (insumos != null ? insumos.size() : 0) +
+                ", cantidadPrecios=" + (precios != null ? precios.size() : 0) +
+                '}';
     }
 }

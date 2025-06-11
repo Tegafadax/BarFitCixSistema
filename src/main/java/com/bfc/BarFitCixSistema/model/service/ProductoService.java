@@ -21,7 +21,7 @@ public interface ProductoService {
     GETProductoDTO actualizarProducto(ActualizarProductoDTO productoDTO);
 
     boolean eliminarProducto(Integer id);
-
+    GETProductoDTO actualizarInsumosDirecto(Integer idProducto, List<CrearProductoDTO.InsumoDetalleDTO> nuevosInsumos);
     // Búsquedas
     List<GETProductoDTO> buscarProductosPorNombre(String nombre);
 
