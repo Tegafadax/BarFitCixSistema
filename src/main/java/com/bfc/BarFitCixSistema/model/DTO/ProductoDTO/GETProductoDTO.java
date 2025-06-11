@@ -1,6 +1,8 @@
 package com.bfc.BarFitCixSistema.model.DTO.ProductoDTO;
 
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.List;
@@ -10,9 +12,13 @@ import java.util.List;
 public class GETProductoDTO {
     private Integer idProducto;
     private String nomProducto;
-    private Float precioDeProductos;
-    private LocalDateTime fecInicio;
-    private LocalDate fecFin;
+
+    // Precio actual
+    private BigDecimal precioActual;
+    private LocalDateTime fechaPrecioActual;
+    private String empleadoModificoPrecio;
+
+    // Insumos (mantener igual)
     private List<ProductoInsumoDTO> insumos;
 
     @Data

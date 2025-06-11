@@ -2,13 +2,15 @@ package com.bfc.BarFitCixSistema.model.DTO.ProductoDTO;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 // DTO para crear un nuevo producto (POST)
 @Data
 public class CrearProductoDTO {
     private String nomProducto;
-    private Float precioDeProductos;
+    private BigDecimal precioInicial;
+    private Integer idEmpleado; // quien crea el producto
     private List<InsumoDetalleDTO> insumos;
 
     @Data

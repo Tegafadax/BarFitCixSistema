@@ -11,20 +11,32 @@ import java.util.List;
 @Repository
 public interface ProductoDAO extends JpaRepository<Producto, Integer> {
 
-    // Buscar productos por nombre (case insensitive)
+    // Buscar productos por nombre (case insensitive) - MANTENER
     List<Producto> findByNomProductoContainingIgnoreCase(String nombre);
 
-    // Buscar productos activos (sin fecha fin)
-    List<Producto> findByFecFinIsNull();
+    // Query para obtener productos con precios actuales e insumos
+    @Query("SELECT DISTINCT p FROM Producto p " +
+            "LEFT JOIN FETCH p.precios pp " +
+            "LEFT JOIN FETCH p.insumos pi " +
+            "LEFT JOIN FETCH pi.insumo " +
+            "LEFT JOIN FETCH pi.tipoCantidad " +
+            "WHERE pp.activo = true AND pp.fechaFin IS NULL")
+    List<Producto> findAllWithPreciosActivosAndInsumos();
 
-    // Buscar productos inactivos (con fecha fin)
-    List<Producto> findByFecFinIsNotNull();
+    // Obtener un producto específico con precio actual e insumos
+    @Query("SELECT p FROM Producto p " +
+            "LEFT JOIN FETCH p.precios pp " +
+            "LEFT JOIN FETCH p.insumos pi " +
+            "LEFT JOIN FETCH pi.insumo " +
+            "LEFT JOIN FETCH pi.tipoCantidad " +
+            "WHERE p.idProducto = :id AND (pp.activo = true AND pp.fechaFin IS NULL OR pp IS NULL)")
+    Producto findByIdWithPrecioActivoAndInsumos(@Param("id") Integer id);
 
-    // Query personalizada para obtener productos con sus insumos
-    @Query("SELECT p FROM Producto p LEFT JOIN FETCH p.insumos pi LEFT JOIN FETCH pi.insumo LEFT JOIN FETCH pi.tipoCantidad")
-    List<Producto> findAllWithInsumos();
-
-    // Obtener un producto específico con sus insumos
-    @Query("SELECT p FROM Producto p LEFT JOIN FETCH p.insumos pi LEFT JOIN FETCH pi.insumo LEFT JOIN FETCH pi.tipoCantidad WHERE p.idProducto = :id")
-    Producto findByIdWithInsumos(@Param("id") Integer id);
+    // Obtener productos con precio en un rango específico
+    @Query("SELECT DISTINCT p FROM Producto p " +
+            "JOIN p.precios pp " +
+            "WHERE pp.activo = true AND pp.fechaFin IS NULL " +
+            "AND pp.precio BETWEEN :precioMin AND :precioMax")
+    List<Producto> findByRangoPrecio(@Param("precioMin") java.math.BigDecimal precioMin,
+                                     @Param("precioMax") java.math.BigDecimal precioMax);
 }

@@ -1,14 +1,13 @@
 package com.bfc.BarFitCixSistema.controller;
 
-import com.bfc.BarFitCixSistema.model.DTO.ProductoDTO.ActualizarProductoDTO;
-import com.bfc.BarFitCixSistema.model.DTO.ProductoDTO.CrearProductoDTO;
-import com.bfc.BarFitCixSistema.model.DTO.ProductoDTO.GETProductoDTO;
+import com.bfc.BarFitCixSistema.model.DTO.ProductoDTO.*;
 import com.bfc.BarFitCixSistema.model.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -18,6 +17,8 @@ public class ProductoController {
 
     @Autowired
     private ProductoService productoService;
+
+    // ===================== CRUD BÁSICO =====================
 
     @GetMapping("/listar")
     public ResponseEntity<List<GETProductoDTO>> listarTodosProductos() {
@@ -81,6 +82,8 @@ public class ProductoController {
         }
     }
 
+    // ===================== BÚSQUEDAS =====================
+
     @GetMapping("/buscar-por-nombre")
     public ResponseEntity<List<GETProductoDTO>> buscarProductosPorNombre(@RequestParam String nombre) {
         try {
@@ -91,21 +94,47 @@ public class ProductoController {
         }
     }
 
-    @GetMapping("/activos")
-    public ResponseEntity<List<GETProductoDTO>> listarProductosActivos() {
+    @GetMapping("/buscar-por-precio")
+    public ResponseEntity<List<GETProductoDTO>> buscarProductosPorRangoPrecio(
+            @RequestParam BigDecimal precioMin,
+            @RequestParam BigDecimal precioMax) {
         try {
-            List<GETProductoDTO> productos = productoService.listarProductosActivos();
+            List<GETProductoDTO> productos = productoService.buscarProductosPorRangoPrecio(precioMin, precioMax);
             return ResponseEntity.ok(productos);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
     }
 
-    @GetMapping("/inactivos")
-    public ResponseEntity<List<GETProductoDTO>> listarProductosInactivos() {
+    // ===================== GESTIÓN DE PRECIOS - NUEVO =====================
+
+    @PostMapping("/cambiar-precio")
+    public ResponseEntity<GETProductoDTO> cambiarPrecio(@RequestBody CambiarPrecioDTO cambiarPrecioDTO) {
         try {
-            List<GETProductoDTO> productos = productoService.listarProductosInactivos();
-            return ResponseEntity.ok(productos);
+            GETProductoDTO productoActualizado = productoService.cambiarPrecio(cambiarPrecioDTO);
+            return ResponseEntity.ok(productoActualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/{id}/historial-precios")
+    public ResponseEntity<List<HistorialPrecioDTO>> obtenerHistorialPrecios(@PathVariable Integer id) {
+        try {
+            List<HistorialPrecioDTO> historial = productoService.obtenerHistorialPrecios(id);
+            return ResponseEntity.ok(historial);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/{id}/precio-actual")
+    public ResponseEntity<BigDecimal> obtenerPrecioActual(@PathVariable Integer id) {
+        try {
+            BigDecimal precio = productoService.obtenerPrecioActual(id);
+            return ResponseEntity.ok(precio);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }

@@ -25,19 +25,23 @@ public class Producto implements Serializable {
     @Column(name = "id_producto")
     private Integer idProducto;
 
-    @Column(name = "precio_de_productos", nullable = false)
-    private Float precioDeProductos;
-
     @Column(name = "nom_producto", length = 100)
     private String nomProducto;
 
-    @Column(name = "fec_inicio", nullable = false, insertable = true, updatable = false)
-    @CreationTimestamp
-    private LocalDateTime fecInicio;
+    // Relación con los precios (historial)
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductoPrecio> precios;
 
-    @Column(name = "fec_fin")
-    private LocalDate fecFin;
-
+    // Relación con los insumos (recetas)
     @OneToMany(mappedBy = "producto", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private List<ProductoInsumo> insumos;
+
+    // Método helper para obtener el precio actual
+    public ProductoPrecio getPrecioActual() {
+        return precios != null ?
+                precios.stream()
+                        .filter(p -> p.getActivo() && p.getFechaFin() == null)
+                        .findFirst()
+                        .orElse(null) : null;
+    }
 }
