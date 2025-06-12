@@ -1,109 +1,47 @@
-<!DOCTYPE html>
+
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BarFitCIX - Pedido</title>
-    <!-- Enlace a Bootstrap CSS para estilos base -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Enlace a Bootstrap Icons para los iconos -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Enlace a tu archivo de estilos principal -->
     <link href="/css/styles.css" rel="stylesheet">
 </head>
 <body>
 <div class="dashboard-container">
-    <!-- Sidebar: Barra lateral de navegación -->
-    <div class="sidebar expanded" id="sidebar"> <!-- Clase 'expanded' para el estado inicial -->
-        <div class="sidebar-header">
-            <!-- Contenedor del logo y título -->
-            <div class="sidebar-brand-container">
-                <img src="/images/logo.jpg" alt="BarFitCIX Logo" class="sidebar-logo-img">
-                <span class="sidebar-title">BarFitCIX</span> <!-- Título de la empresa -->
-            </div>
-            <!-- Información del usuario -->
-            <div class="user-info">
-                <h5>Bienvenid@</h5>
-                <small>Nombre de Usuario</small>
-            </div>
-            <!-- Botón para colapsar/expandir el sidebar -->
-            <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
-                <i class="bi bi-chevron-left"></i> <!-- Icono que rota al colapsar -->
-            </button>
-        </div>
-
-        <!-- Lista de opciones de navegación -->
+    <!-- Sidebar (sin cambios) -->
+    <div class="sidebar expanded" id="sidebar">
+        <div class="sidebar-header"><div class="sidebar-brand-container"><img src="/images/logo.jpg" class="sidebar-logo-img"><span class="sidebar-title">BarFitCIX</span></div><div class="user-info"><h5>Bienvenid@</h5><small>Nombre de Usuario</small></div><button class="sidebar-toggle-btn" onclick="toggleSidebar()"><i class="bi bi-chevron-left"></i></button></div>
         <ul class="sidebar-nav">
-            <li>
-                <a href="/dashboard">
-                    <i class="bi bi-door-open"></i> <!-- Icono para SALAS -->
-                    <span>SALAS</span>
-                </a>
-            </li>
-            <li>
-                <a href="/historial-pedidos">
-                    <i class="bi bi-list-check"></i> <!-- Icono para PEDIDOS -->
-                    <span>PEDIDOS</span>
-                </a>
-            </li>
-            <li>
-                <a href="/platos">
-                    <i class="bi bi-cup-hot"></i> <!-- Icono para PLATOS -->
-                    <span>PLATOS</span>
-                </a>
-            </li>
-            <li>
-                <a href="/reportes">
-                    <i class="bi bi-graph-up"></i> <!-- Icono para REPORTE -->
-                    <span>REPORTE</span>
-                </a>
-            </li>
-            <li>
-                <a href="/configuracion">
-                    <i class="bi bi-gear"></i> <!-- Icono para CONFIGURACIÓN -->
-                    <span>CONFIGURACIÓN</span>
-                </a>
-            </li>
+            <li><a href="/dashboard"><i class="bi bi-door-open"></i> <span>SALAS</span></a></li>
+            <li><a href="/historial-pedidos" class="active"><i class="bi bi-list-check"></i> <span>PEDIDOS</span></a></li>
+            <li><a href="/platos"><i class="bi bi-cup-hot"></i> <span>PLATOS</span></a></li>
+            <li><a href="/reportes"><i class="bi bi-graph-up"></i> <span>REPORTE</span></a></li>
+            <li><a href="/configuracion"><i class="bi bi-gear"></i> <span>CONFIGURACIÓN</span></a></li>
         </ul>
     </div>
 
-    <!-- Main Content: Contenido principal de la página -->
+    <!-- Main Content -->
     <div class="main-content" id="mainContent">
-        <!-- Top Header: Encabezado superior con hora y acciones de usuario -->
+        <!-- Top Header (sin cambios) -->
         <div class="top-header">
-            <div></div> <!-- Elemento vacío para espaciado -->
-            <div class="datetime-info">
-                <h2 class="current-time" id="currentTime">04:00 PM</h2>
-                <p class="current-date" id="currentDate">12 DE MAYO 2025</p>
-            </div>
-            <div class="user-actions">
-                <!-- Selector de Modo Claro/Oscuro -->
-                <div class="theme-toggle-container">
-                    <i class="bi bi-sun"></i>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="themeToggle">
-                        <label class="form-check-label visually-hidden" for="themeToggle">Modo Oscuro</label>
-                    </div>
-                    <i class="bi bi-moon"></i>
-                </div>
-                <div class="user-avatar">
-                    <i class="bi bi-person"></i> <!-- Icono de avatar de usuario -->
-                </div>
-                <a href="/" class="btn btn-dark">CERRAR SESIÓN</a>
-            </div>
+            <div><h4 id="info-mesa-display"></h4></div>
+            <div class="datetime-info"><h2 class="current-time" id="currentTime"></h2><p class="current-date" id="currentDate"></p></div>
+            <div class="user-actions"><div class="theme-toggle-container"><i class="bi bi-sun"></i><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="themeToggle"></div><i class="bi bi-moon"></i></div><div class="user-avatar"><i class="bi bi-person"></i></div><a href="/" class="btn btn-dark">CERRAR SESIÓN</a></div>
         </div>
 
-        <!-- Content Area: Área de contenido dinámico -->
+        <!-- Content Area -->
         <div class="content-area">
             <div class="order-panel">
                 <div class="order-left">
                     <!-- Comment Section -->
                     <div class="comment-section">
-                        <label class="form-label"><strong>COMENTARIO:</strong></label>
-                        <textarea class="form-control" rows="3" placeholder="Agregar comentario sobre el plato/bebida..."></textarea>
-                        <div class="mt-3">
-                            <button class="btn btn-accent me-2">GUARDAR</button>
-                            <button class="btn btn-danger">ELIMINAR</button>
+                        <label class="form-label"><strong>COMENTARIO PARA EL PRODUCTO SELECCIONADO:</strong></label>
+                        <textarea class="form-control" id="comentario-general" rows="3" placeholder="Seleccione un producto de la lista para agregar o editar su comentario..."></textarea>
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-outline-primary" id="guardar-comentario-btn">Guardar Comentario</button>
+                            <button class="btn btn-sm btn-outline-secondary" id="limpiar-comentario-btn">Limpiar</button>
                         </div>
                     </div>
 
@@ -111,15 +49,7 @@
                     <div class="order-items">
                         <div class="table-responsive">
                             <table class="table table-borderless">
-                                <thead>
-                                <tr>
-                                    <th>PLATO</th>
-                                    <th>CANT</th>
-                                    <th>PRECIO</th>
-                                    <th>SUBTOTAL</th>
-                                    <th>COMENTARIO</th>
-                                </tr>
-                                </thead>
+                                <thead><tr><th>PLATO</th><th>CANT</th><th>PRECIO</th><th>SUBTOTAL</th><th>COMENTARIO</th></tr></thead>
                                 <tbody id="orderItemsTable">
                                 <!-- Los items del pedido se agregarán aquí dinámicamente -->
                                 </tbody>
@@ -129,14 +59,10 @@
 
                     <!-- Total and Actions -->
                     <div class="text-center">
-                        <div class="mb-3">
-                            <span class="fs-5"><strong>TOTAL A PAGAR: </strong></span>
-                            <span class="fs-4 text-primary" id="totalAmount">S/. 0.00</span>
-                        </div>
+                        <div class="mb-3"><span class="fs-5"><strong>TOTAL A PAGAR: </strong></span><span class="fs-4 text-primary" id="totalAmount">S/. 0.00</span></div>
                         <div class="order-actions">
-                            <button class="btn btn-secondary" disabled>EDITAR</button>
-                            <button class="btn btn-danger" onclick="removeSelectedItem()">ELIMINAR</button>
-                            <button class="btn btn-success" onclick="saveOrder()">GUARDAR</button>
+                            <button class="btn btn-danger" id="limpiar-pedido-btn">LIMPIAR PEDIDO</button>
+                            <button class="btn btn-success" id="crear-pedido-btn">GUARDAR PEDIDO</button>
                         </div>
                     </div>
                 </div>
@@ -144,61 +70,9 @@
                 <!-- Menu Panel -->
                 <div class="menu-panel">
                     <h5 class="text-center mb-3">PLATOS DEL DÍA</h5>
-
-                    <div class="menu-search">
-                        <input type="text" class="form-control" placeholder="Buscar plato..." id="menuSearch">
-                    </div>
-
-                    <div class="menu-items">
-                        <div class="menu-item" data-price="25.00" data-name="Pollo a la Plancha">
-                            <div>
-                                <div><strong>Pollo a la Plancha</strong></div>
-                                <div class="text-muted">S/. 25.00</div>
-                            </div>
-                            <button class="btn btn-sm btn-primary" onclick="addMenuItem(this)">
-                                <i class="bi bi-plus"></i>
-                            </button>
-                        </div>
-
-                        <div class="menu-item" data-price="22.00" data-name="Ensalada César">
-                            <div>
-                                <div><strong>Ensalada César</strong></div>
-                                <div class="text-muted">S/. 22.00</div>
-                            </div>
-                            <button class="btn btn-sm btn-primary" onclick="addMenuItem(this)">
-                                <i class="bi bi-plus"></i>
-                            </button>
-                        </div>
-
-                        <div class="menu-item" data-price="18.00" data-name="Proteína Vegana">
-                            <div>
-                                <div><strong>Proteína Vegana</strong></div>
-                                <div class="text-muted">S/. 18.00</div>
-                            </div>
-                            <button class="btn btn-sm btn-primary" onclick="addMenuItem(this)">
-                                <i class="bi bi-plus"></i>
-                            </button>
-                        </div>
-
-                        <div class="menu-item" data-price="15.00" data-name="Batido Proteico">
-                            <div>
-                                <div><strong>Batido Proteico</strong></div>
-                                <div class="text-muted">S/. 15.00</div>
-                            </div>
-                            <button class="btn btn-sm btn-primary" onclick="addMenuItem(this)">
-                                <i class="bi bi-plus"></i>
-                            </button>
-                        </div>
-
-                        <div class="menu-item" data-price="12.00" data-name="Agua Infusionada">
-                            <div>
-                                <div><strong>Agua Infusionada</strong></div>
-                                <div class="text-muted">S/. 12.00</div>
-                            </div>
-                            <button class="btn btn-sm btn-primary" onclick="addMenuItem(this)">
-                                <i class="bi bi-plus"></i>
-                            </button>
-                        </div>
+                    <div class="menu-search"><input type="text" class="form-control" placeholder="Buscar plato..." id="menuSearch"></div>
+                    <div class="menu-items" id="menu-items-container">
+                        <!-- Los productos disponibles se cargarán aquí -->
                     </div>
                 </div>
             </div>
@@ -206,9 +80,230 @@
     </div>
 </div>
 
-<!-- Enlace a Bootstrap JS (bundle incluye Popper) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Enlace a tu archivo de JavaScript principal -->
 <script src="/js/app.js"></script>
+<script>
+    // --- ESTADO DE LA APLICACIÓN ---
+    let pedidoActual = {
+        mesa: null,
+        sala: 'SALA 1', // Puedes hacerlo dinámico si lo necesitas
+        idEmpleado: 1, // Hardcodeado, en un sistema real vendría del login
+        detalles: [] // Array de objetos { idProducto, nombre, cantidad, precio, comentario }
+    };
+    let productoSeleccionadoParaComentario = null;
+
+    // --- INICIALIZACIÓN ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Extraer mesa y sala de la URL
+        const pathParts = window.location.pathname.split('/');
+        const mesaId = pathParts[pathParts.length - 1];
+
+        if (mesaId && !isNaN(mesaId)) {
+            pedidoActual.mesa = parseInt(mesaId);
+            document.getElementById('info-mesa-display').textContent = `Pedido para Mesa: ${mesaId}`;
+        } else {
+             document.getElementById('info-mesa-display').textContent = 'Error: Mesa no especificada';
+        }
+
+
+        cargarProductosDisponibles();
+        setupEventListeners();
+    });
+
+    function setupEventListeners() {
+        document.getElementById('crear-pedido-btn').addEventListener('click', crearPedido);
+        document.getElementById('limpiar-pedido-btn').addEventListener('click', limpiarPedido);
+        document.getElementById('guardar-comentario-btn').addEventListener('click', guardarComentario);
+        document.getElementById('limpiar-comentario-btn').addEventListener('click', () => {
+            document.getElementById('comentario-general').value = '';
+            document.getElementById('comentario-general').placeholder = "Seleccione un producto de la lista para agregar o editar su comentario...";
+            productoSeleccionadoParaComentario = null;
+        });
+        document.getElementById('menuSearch').addEventListener('keyup', filtrarProductos);
+    }
+
+    // --- LÓGICA DE PRODUCTOS ---
+    async function cargarProductosDisponibles() {
+        const container = document.getElementById('menu-items-container');
+        container.innerHTML = '<p class="text-center">Cargando productos...</p>';
+        try {
+            const response = await fetch('/api/producto/listar'); // Usamos el endpoint que ya tienes
+            const productos = await response.json();
+            container.innerHTML = '';
+            productos.forEach(p => {
+                if(p.precioActual > 0) { // Solo mostrar productos con precio
+                    const div = document.createElement('div');
+                    div.className = 'menu-item';
+                    div.innerHTML = `
+                        <div>
+                            <div><strong>${p.nomProducto}</strong></div>
+                            <div class="text-muted">S/ ${parseFloat(p.precioActual).toFixed(2)}</div>
+                        </div>
+                        <button class="btn btn-sm btn-primary" onclick="agregarProducto(${p.idProducto}, '${p.nomProducto}', ${p.precioActual})">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    `;
+                    container.appendChild(div);
+                }
+            });
+        } catch (error) {
+            container.innerHTML = '<p class="text-center text-danger">Error al cargar productos.</p>';
+            console.error(error);
+        }
+    }
+
+    function filtrarProductos() {
+        const filter = document.getElementById('menuSearch').value.toUpperCase();
+        const items = document.getElementById('menu-items-container').getElementsByClassName('menu-item');
+        for (let i = 0; i < items.length; i++) {
+            const strong = items[i].getElementsByTagName('strong')[0];
+            if (strong.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                items[i].style.display = "flex";
+            } else {
+                items[i].style.display = "none";
+            }
+        }
+    }
+
+    // --- LÓGICA DEL PEDIDO ---
+    function agregarProducto(id, nombre, precio) {
+        const productoExistente = pedidoActual.detalles.find(p => p.idProducto === id);
+        if (productoExistente) {
+            productoExistente.cantidad++;
+        } else {
+            pedidoActual.detalles.push({
+                idProducto: id,
+                nombre: nombre,
+                cantidad: 1,
+                precio: precio,
+                comentario: ''
+            });
+        }
+        renderizarTablaPedido();
+    }
+
+    function modificarCantidad(idProducto, cambio) {
+        const producto = pedidoActual.detalles.find(p => p.idProducto === idProducto);
+        if (producto) {
+            producto.cantidad += cambio;
+            if (producto.cantidad <= 0) {
+                // Eliminar producto si la cantidad es 0 o menos
+                pedidoActual.detalles = pedidoActual.detalles.filter(p => p.idProducto !== idProducto);
+            }
+        }
+        renderizarTablaPedido();
+    }
+
+    function editarComentario(idProducto) {
+        productoSeleccionadoParaComentario = idProducto;
+        const producto = pedidoActual.detalles.find(p => p.idProducto === idProducto);
+        const textarea = document.getElementById('comentario-general');
+        textarea.value = producto ? producto.comentario : '';
+        textarea.placeholder = `Editando comentario para: ${producto.nombre}`;
+        textarea.focus();
+    }
+
+    function guardarComentario() {
+        if (productoSeleccionadoParaComentario) {
+            const producto = pedidoActual.detalles.find(p => p.idProducto === productoSeleccionadoParaComentario);
+            if (producto) {
+                producto.comentario = document.getElementById('comentario-general').value;
+            }
+            productoSeleccionadoParaComentario = null;
+            document.getElementById('comentario-general').value = '';
+            document.getElementById('comentario-general').placeholder = "Seleccione un producto de la lista para agregar o editar su comentario...";
+            renderizarTablaPedido();
+        } else {
+            alert("Por favor, primero seleccione un producto de la lista para editar su comentario.");
+        }
+    }
+
+    function limpiarPedido() {
+        if (confirm("¿Está seguro de que desea limpiar todo el pedido?")) {
+            pedidoActual.detalles = [];
+            renderizarTablaPedido();
+        }
+    }
+
+    // --- RENDERIZADO Y CÁLCULOS ---
+    function renderizarTablaPedido() {
+        const tbody = document.getElementById('orderItemsTable');
+        tbody.innerHTML = '';
+        if (pedidoActual.detalles.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">Añada productos desde la lista de la derecha.</td></tr>';
+        } else {
+            pedidoActual.detalles.forEach(p => {
+                const row = document.createElement('tr');
+                const subtotal = p.cantidad * p.precio;
+                row.innerHTML = `
+                    <td>${p.nombre}</td>
+                    <td class="d-flex align-items-center justify-content-center">
+                        <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="modificarCantidad(${p.idProducto}, -1)">-</button>
+                        <span class="mx-2">${p.cantidad}</span>
+                        <button class="btn btn-sm btn-outline-success py-0 px-1" onclick="modificarCantidad(${p.idProducto}, 1)">+</button>
+                    </td>
+                    <td>S/ ${p.precio.toFixed(2)}</td>
+                    <td>S/ ${subtotal.toFixed(2)}</td>
+                    <td>
+                        ${p.comentario || ''}
+                        <button class="btn btn-sm btn-link py-0" onclick="editarComentario(${p.idProducto})"><i class="bi bi-pencil"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        actualizarTotal();
+    }
+
+    function actualizarTotal() {
+        const total = pedidoActual.detalles.reduce((sum, p) => sum + (p.cantidad * p.precio), 0);
+        document.getElementById('totalAmount').textContent = `S/ ${total.toFixed(2)}`;
+    }
+
+    // --- ACCIÓN FINAL: CREAR PEDIDO ---
+    async function crearPedido() {
+        if (pedidoActual.detalles.length === 0) {
+            alert("No puede guardar un pedido vacío.");
+            return;
+        }
+
+        const btn = document.getElementById('crear-pedido-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+
+        // Formatear para el DTO del backend
+        const pedidoParaEnviar = {
+            mesa: pedidoActual.mesa,
+            sala: pedidoActual.sala,
+            idEmpleado: pedidoActual.idEmpleado,
+            detalles: pedidoActual.detalles.map(p => ({
+                idProducto: p.idProducto,
+                cantidad: p.cantidad,
+                comentario: p.comentario
+            }))
+        };
+
+        try {
+            const response = await fetch('/api/pedidos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(pedidoParaEnviar)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error en el servidor');
+            }
+
+            const nuevoPedido = await response.json();
+            alert(`Pedido #${nuevoPedido.idPedido} creado con éxito.`);
+            window.location.href = '/historial-pedidos'; // Redirigir al historial
+
+        } catch (error) {
+            alert(`Error al crear el pedido: ${error.message}`);
+            btn.disabled = false;
+            btn.innerHTML = 'GUARDAR PEDIDO';
+        }
+    }
+</script>
 </body>
 </html>
