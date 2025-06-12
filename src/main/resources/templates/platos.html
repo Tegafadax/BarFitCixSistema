@@ -7,6 +7,37 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/css/styles.css" rel="stylesheet">
+    <style>
+        .table-row-hover:hover {
+            background-color: var(--hover-color, #f8f9fa) !important;
+            transition: background-color 0.2s ease;
+        }
+
+        .price-cell:hover {
+            background-color: rgba(40, 167, 69, 0.1) !important;
+            border-radius: 4px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .productos-info {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+    </style>
 </head>
 <body>
 <div class="dashboard-container">
@@ -90,42 +121,86 @@
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header bg-success text-white text-center">
-                            <h5 class="mb-0">NUEVO PLATO</h5>
+                            <h5 class="mb-0">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                NUEVO PLATO
+                            </h5>
                         </div>
                         <div class="card-body">
-                            <form id="platoForm">
+                            <!-- Banner de información de edición se insertará aquí dinámicamente -->
+
+                            <form id="platoForm" onsubmit="event.preventDefault(); /* Función se asigna dinámicamente */">
                                 <div class="mb-3">
-                                    <label class="form-label"><strong>NOMBRE:</strong></label>
-                                    <input type="text" class="form-control" id="nombrePlato" placeholder="Type here..." required>
+                                    <label class="form-label">
+                                        <strong>NOMBRE:</strong>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="nombrePlato"
+                                           placeholder="Nombre del producto..." required
+                                           minlength="2" maxlength="100">
+                                    <div class="form-text">Mínimo 2 caracteres, máximo 100</div>
                                 </div>
 
                                 <div class="mb-4">
-                                    <label class="form-label"><strong>PRECIO:</strong></label>
-                                    <input type="number" class="form-control text-center" id="precioPlato" value="0.00" step="0.10" min="0">
+                                    <label class="form-label">
+                                        <strong>PRECIO:</strong>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">S/.</span>
+                                        <input type="number" class="form-control text-center"
+                                               id="precioPlato" value="0.00"
+                                               step="0.10" min="0.10" max="9999.99" required>
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        <span id="precio-help-text">Precio inicial del producto</span>
+                                    </div>
                                 </div>
 
                                 <!-- Sección de Tabla de Insumos -->
                                 <div class="mb-4">
-                                    <label class="form-label"><strong>INSUMOS:</strong></label>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label class="form-label mb-0">
+                                            <strong>INSUMOS:</strong>
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <span class="badge bg-secondary" id="insumos-counter">
+                            0 insumos
+                        </span>
+                                    </div>
+
                                     <div class="d-flex gap-2 mb-2">
-                                        <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addIngredientModal">
+                                        <button type="button" class="btn btn-success btn-sm"
+                                                data-bs-toggle="modal" data-bs-target="#addIngredientModal">
                                             <i class="bi bi-plus-circle me-2"></i>Agregar
                                         </button>
-                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeSelectedIngredient()">
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                                onclick="removeSelectedIngredient()">
                                             <i class="bi bi-trash me-2"></i>Eliminar
                                         </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm ms-auto"
+                                                onclick="limpiarTodosInsumos()" title="Limpiar todos los insumos">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                        </button>
                                     </div>
-                                    <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
-                                        <table class="table table-striped table-sm">
-                                            <thead>
+
+                                    <div class="table-responsive" style="max-height: 250px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem;">
+                                        <table class="table table-striped table-sm mb-0">
+                                            <thead class="table-dark sticky-top">
                                             <tr>
-                                                <th>Tipo</th>
-                                                <th>Cantidad</th>
-                                                <th>Unidad</th>
+                                                <th width="40%">Insumo</th>
+                                                <th width="25%">Cantidad</th>
+                                                <th width="25%">Unidad</th>
+                                                <th width="10%"></th>
                                             </tr>
                                             </thead>
                                             <tbody id="insumosTableBody">
-                                            <!-- Insumos se añadirán aquí dinámicamente -->
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted py-3">
+                                                    <i class="bi bi-info-circle"></i> No hay insumos agregados
+                                                </td>
+                                            </tr>
                                             </tbody>
                                         </table>
                                     </div>
@@ -136,9 +211,9 @@
                                         <i class="bi bi-floppy me-2"></i>
                                         GUARDAR
                                     </button>
-                                    <button type="button" class="btn btn-danger" onclick="clearPlatoForm()">
-                                        <i class="bi bi-trash me-2"></i>
-                                        ELIMINAR
+                                    <button type="button" class="btn btn-warning" onclick="clearPlatoForm()">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>
+                                        LIMPIAR
                                     </button>
                                 </div>
 
@@ -149,57 +224,90 @@
                             </form>
                         </div>
                     </div>
+
+                    <!-- Información de ayuda -->
+                    <div class="mt-3">
+                        <div class="alert alert-info py-2" id="form-help-info">
+                            <small>
+                                <i class="bi bi-lightbulb me-1"></i>
+                                <strong>Modo Crear:</strong>
+                                <br>• Complete el nombre y precio del producto
+                                <br>• Agregue los insumos necesarios
+                                <br>• Haga clic en "Guardar" para crear el producto
+                            </small>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="col-md-6">
+                    <!-- Barra de búsqueda mejorada -->
                     <div class="mb-3">
                         <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="bi bi-search"></i>
-                                </span>
-                            <input type="text" class="form-control" placeholder="Search" id="searchPlatos">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control"
+                                   placeholder="Buscar por nombre o precio..."
+                                   id="searchPlatos" onkeyup="filtrarProductos()">
+                            <button class="btn btn-outline-secondary" type="button"
+                                    onclick="document.getElementById('searchPlatos').value=''; filtrarProductos();">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
                         </div>
                     </div>
 
+                    <!-- Información de productos -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">
+                            <i class="bi bi-list"></i> Lista de Productos
+                        </h6>
+                        <div class="productos-info">
+                            <span id="productos-contador">-</span>
+                            <button class="btn btn-sm btn-outline-primary ms-2"
+                                    onclick="cargarProductos()" title="Recargar">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de productos -->
                     <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                        <table class="table table-striped">
-                            <thead class="sticky-top">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark sticky-top">
                             <tr>
-                                <th>DESCRIPCIÓN</th>
-                                <th>PRECIO</th>
+                                <th width="60%">
+                                    <i class="bi bi-cup-hot me-1"></i>
+                                    DESCRIPCIÓN
+                                </th>
+                                <th width="40%" class="text-center">
+                                    <i class="bi bi-currency-dollar me-1"></i>
+                                    PRECIO
+                                </th>
                             </tr>
                             </thead>
                             <tbody id="platosTable">
-                            <tr data-name="PLATO 1" data-price="15.00">
-                                <td>PLATO 1</td>
-                                <td class="price-cell" onclick="showPriceHistoryModal('PLATO 1')">S/. 15.00</td>
-                            </tr>
-                            <tr data-name="PLATO 2" data-price="20.50">
-                                <td>PLATO 2</td>
-                                <td class="price-cell" onclick="showPriceHistoryModal('PLATO 2')">S/. 20.50</td>
-                            </tr>
-                            <tr data-name="PLATO 3" data-price="12.00">
-                                <td>PLATO 3</td>
-                                <td class="price-cell" onclick="showPriceHistoryModal('PLATO 3')">S/. 12.00</td>
-                            </tr>
-                            <tr data-name="PLATO 4" data-price="25.00">
-                                <td>PLATO 4</td>
-                                <td class="price-cell" onclick="showPriceHistoryModal('PLATO 4')">S/. 25.00</td>
-                            </tr>
-                            <tr data-name="PLATO 5" data-price="18.75">
-                                <td>PLATO 5</td>
-                                <td class="price-cell" onclick="showPriceHistoryModal('PLATO 5')">S/. 18.75</td>
-                            </tr>
-                            <tr data-name="PLATO 6" data-price="30.00">
-                                <td>PLATO 6</td>
-                                <td class="price-cell" onclick="showPriceHistoryModal('PLATO 6')">S/. 30.00</td>
-                            </tr>
-                            <tr data-name="PLATO 7" data-price="10.00">
-                                <td>PLATO 7</td>
-                                <td class="price-cell" onclick="showPriceHistoryModal('PLATO 7')">S/. 10.00</td>
+                            <!-- Los productos se cargarán aquí desde la API -->
+                            <tr>
+                                <td colspan="2" class="text-center py-4">
+                                    <div class="loading-spinner"></div>
+                                    <div class="mt-2">Conectando con la base de datos...</div>
+                                </td>
                             </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Información adicional -->
+                    <div class="mt-3">
+                        <div class="alert alert-info py-2">
+                            <small>
+                                <i class="bi bi-info-circle me-1"></i>
+                                <strong>Instrucciones:</strong>
+                                <br>• Haz clic en cualquier producto para editarlo
+                                <br>• Haz clic en el precio para ver el historial
+                                <br>• Usa la búsqueda para filtrar productos
+                            </small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -209,29 +317,40 @@
 
 <!-- Modal de Historial de Precios -->
 <div class="modal fade" id="priceHistoryModal" tabindex="-1" aria-labelledby="priceHistoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="priceHistoryModalLabel">Historial de Precios de <span id="productNameHistory"></span></h5>
+                <h5 class="modal-title" id="priceHistoryModalLabel">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Historial de Precios de <span id="productNameHistory"></span>
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="table-responsive">
                     <table class="table table-striped">
-                        <thead>
+                        <thead class="table-dark">
                         <tr>
-                            <th>Fecha</th>
-                            <th>Precio</th>
+                            <th width="30%">Fecha</th>
+                            <th width="30%" class="text-center">Precio</th>
+                            <th width="40%" class="text-center">Estado</th>
                         </tr>
                         </thead>
                         <tbody id="priceHistoryTableBody">
-                        <!-- Historial de precios se cargará aquí -->
+                        <!-- Los datos se cargarán aquí dinámicamente -->
                         </tbody>
                     </table>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>
+                    Cerrar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="abrirModalCambiarPrecio()">
+                    <i class="bi bi-pencil me-1"></i>
+                    Cambiar Precio
+                </button>
             </div>
         </div>
     </div>
@@ -242,7 +361,10 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addIngredientModalLabel">Añadir Insumo</h5>
+                <h5 class="modal-title" id="addIngredientModalLabel">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Añadir Insumo
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -251,22 +373,109 @@
                         <label for="ingredientType" class="form-label">Tipo de Insumo</label>
                         <select class="form-control" id="ingredientType" required>
                             <option value="">Seleccionar...</option>
-                            <!-- Opciones se cargarán aquí dinámicamente desde app.js -->
+                            <!-- Opciones se cargarán aquí dinámicamente desde la API -->
                         </select>
                     </div>
                     <div class="mb-3">
                         <label for="ingredientQuantity" class="form-label">Cantidad de Insumo</label>
-                        <input type="number" class="form-control" id="ingredientQuantity" min="0.01" step="0.01" required>
+                        <input type="number" class="form-control" id="ingredientQuantity"
+                               min="0.01" step="0.01" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Unidad</label>
-                        <span id="displayIngredientUnit" class="form-control" style="background-color: var(--border-color); color: var(--text-color-light); border: 1px solid var(--border-color); pointer-events: none;"></span>
+                        <span id="displayIngredientUnit" class="form-control"
+                              style="background-color: var(--border-color); color: var(--text-color-light); border: 1px solid var(--border-color); pointer-events: none;">
+                              Seleccione un insumo primero
+                        </span>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="saveIngredient()">Guardar Insumo</button>
+                <button type="button" class="btn btn-primary" onclick="saveIngredient()">
+                    <i class="bi bi-check-lg me-1"></i>
+                    Guardar Insumo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Cambiar Precio -->
+<div class="modal fade" id="cambiarPrecioModal" tabindex="-1" aria-labelledby="cambiarPrecioModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cambiarPrecioModalLabel">
+                    <i class="bi bi-pencil me-2"></i>
+                    Cambiar Precio
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="cambiarPrecioForm" onsubmit="event.preventDefault(); confirmarCambioPrecio();">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-box me-1"></i>
+                            Producto:
+                        </label>
+                        <input type="text" class="form-control" id="nombreProductoPrecio" readonly>
+                        <input type="hidden" id="idProductoPrecio">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-currency-dollar me-1"></i>
+                            Precio Actual:
+                        </label>
+                        <input type="text" class="form-control bg-light" id="precioActualProducto" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-arrow-up-circle me-1"></i>
+                            Nuevo Precio: <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">S/.</span>
+                            <input type="number" class="form-control" id="nuevoPrecioProducto"
+                                   step="0.10" min="0.10" max="9999.99" required
+                                   placeholder="0.00">
+                        </div>
+                        <div class="invalid-feedback">
+                            El precio debe ser mayor a 0 y diferente al precio actual
+                        </div>
+                        <div class="valid-feedback">
+                            Precio válido ✓
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-chat-text me-1"></i>
+                            Motivo del Cambio:
+                        </label>
+                        <textarea class="form-control" id="motivoCambioPrecio" rows="3"
+                                  placeholder="Opcional: Explique el motivo del cambio de precio..."
+                                  maxlength="255"></textarea>
+                        <div class="form-text">Máximo 255 caracteres</div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Importante:</strong> Este cambio quedará registrado en el historial de precios del producto.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="confirmarCambioPrecio()" disabled>
+                    <i class="bi bi-check-lg me-1"></i>
+                    Actualizar Precio
+                </button>
             </div>
         </div>
     </div>
@@ -274,5 +483,40 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/js/app.js"></script>
+
+<!-- Script para inicializar la página -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log('🚀 Página de platos cargada');
+
+        // Inicializar la página después de que se cargue todo
+        setTimeout(() => {
+            if (typeof inicializarPaginaPlatos === 'function') {
+                inicializarPaginaPlatos();
+            } else {
+                console.error('❌ Función inicializarPaginaPlatos no encontrada');
+                // Fallback: probar conectividad al menos
+                if (typeof probarConectividad === 'function') {
+                    probarConectividad();
+                }
+            }
+        }, 500);
+
+        // Actualizar contador de productos cada vez que se filtra
+        const searchInput = document.getElementById('searchPlatos');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                setTimeout(() => {
+                    const visibleRows = document.querySelectorAll('#platosTable tr[data-id]:not([style*="display: none"])');
+                    const totalRows = document.querySelectorAll('#platosTable tr[data-id]');
+                    const contador = document.getElementById('productos-contador');
+                    if (contador) {
+                        contador.textContent = `${visibleRows.length} de ${totalRows.length} productos`;
+                    }
+                }, 100);
+            });
+        }
+    });
+</script>
 </body>
 </html>
