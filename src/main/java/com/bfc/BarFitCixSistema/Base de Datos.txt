@@ -1,16 +1,14 @@
-CREATE DATABASE IF NOT EXISTS basesistbarfitcix_v1_8;
-USE basesistbarfitcix_v1_8;
-
--- Tabla rol
+CREATE DATABASE IF NOT EXISTS BFCX4;
+USE  BFCX4;
+-- SEGURIDAD Y ROLES
+-- Tabla de Roles
 CREATE TABLE rol (
-  id_rol INT PRIMARY KEY , -- Este Id de genera solo para " ADMIN " " EMPLEADO"
+  id_rol INT PRIMARY KEY,
   desc_rol VARCHAR(255) NOT NULL
 );
-INSERT INTO rol (id_rol, desc_rol) VALUES (1, 'ADMIN');
-INSERT INTO rol (id_rol, desc_rol) VALUES (2, 'EMPLEADO');
-SELECT * FROM rol;
-
--- Tabla empleado
+INSERT INTO rol (id_rol, desc_rol) VALUES (1, 'ADMIN'), (2, 'EMPLEADO');
+SELECT*FROM ROL;
+-- Tabla de Empleados
 CREATE TABLE empleado (
   id_empleado INT PRIMARY KEY AUTO_INCREMENT,
   nom_empleado VARCHAR(100) NOT NULL,
@@ -19,12 +17,12 @@ CREATE TABLE empleado (
   fec_salida TIMESTAMP NULL,
   activo BOOLEAN,
   contrasena VARCHAR(255),
-  id_rol INT NOT NULL, -- Ya generado antes
+  id_rol INT NOT NULL,
   FOREIGN KEY (id_rol) REFERENCES rol(id_rol)
 );
-SELECT * FROM empleado;
-
--- Tabla empresa
+SELECT*FROM empleado;
+-- Gestión Empresarial
+-- Información de la empresa
 CREATE TABLE empresa (
   id_info_empresa INT PRIMARY KEY AUTO_INCREMENT,
   nom_empresa VARCHAR(255) NOT NULL,
@@ -33,91 +31,119 @@ CREATE TABLE empresa (
   cor_empresa VARCHAR(100) NOT NULL,
   logo_empresa VARCHAR(255) NOT NULL,
   fec_modificacion_info TIMESTAMP NOT NULL,
-  id_empleado INT NOT NULL, -- Esto sale del login
+  id_empleado INT NOT NULL,
   FOREIGN KEY (id_empleado) REFERENCES empleado(id_empleado)
 );
 
--- Tabla informe
+-- Tabla de Informes
 CREATE TABLE informe (
   id_informe INT PRIMARY KEY AUTO_INCREMENT,
   fec_informe TIMESTAMP NOT NULL,
   link_informe VARCHAR(255) NOT NULL,
   nom_informe VARCHAR(255) NOT NULL,
-  id_empleado INT NOT NULL, -- Esto sale del login
+  id_empleado INT NOT NULL,
   FOREIGN KEY (id_empleado) REFERENCES empleado(id_empleado)
 );
-
--- Tabla insumo
-CREATE TABLE insumo (
-  id_insumo INT PRIMARY KEY AUTO_INCREMENT,
-  nom_insumo VARCHAR(100) NOT NULL
-);
-
--- Tabla tipo_cantidad
+-- Tabla Tipo de Cantidad (unidad de medida)
 CREATE TABLE tipo_cantidad (
   id_tipo_cantidad INT PRIMARY KEY AUTO_INCREMENT,
   nom_cantidad VARCHAR(20) NOT NULL
 );
+SELECT*FROM tipo_cantidad;
 
--- Tabla producto
-CREATE TABLE producto (
-  id_producto INT PRIMARY KEY AUTO_INCREMENT,
-  nom_producto VARCHAR(100) NOT NULL
+
+INSERT INTO tipo_cantidad (id_tipo_cantidad, nom_cantidad) VALUES
+(1,'Kg'),
+(2,'g'),
+(3,'Lt'),
+(4,'ml'),
+(5,'Unidad'),
+(6,'Taza'),
+(7,'Cuchara');
+
+-- Tabla de Insumos
+CREATE TABLE insumo (
+  id_insumo INT PRIMARY KEY AUTO_INCREMENT,
+  nom_insumo VARCHAR(100) NOT NULL,
+  id_tipo_cantidad INT NOT NULL,
+  FOREIGN KEY (id_tipo_cantidad) REFERENCES tipo_cantidad(id_tipo_cantidad)
 );
 
--- Tabla producto_insumo
+
+SELECT*FROM insumo;
+
+
+
+-- Solo estas 2 tablas para el historial de precios
+CREATE TABLE producto (
+  id_producto INT PRIMARY KEY AUTO_INCREMENT,
+  nom_producto VARCHAR(100)
+);
+SELECT*FROM producto;
+
+ALTER TABLE producto DROP COLUMN precio_de_productos;
+ALTER TABLE producto DROP COLUMN fec_inicio;
+ALTER TABLE producto DROP COLUMN fec_fin;
+
+CREATE TABLE producto_precio (
+  id_precio INT PRIMARY KEY AUTO_INCREMENT,
+  id_producto INT NOT NULL,
+  precio DECIMAL(10,2) NOT NULL,
+  fecha_inicio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  fecha_fin TIMESTAMP NULL,
+  activo BOOLEAN DEFAULT TRUE,
+  id_empleado_modifico INT NOT NULL,
+  FOREIGN KEY (id_producto) REFERENCES producto(id_producto),
+  FOREIGN KEY (id_empleado_modifico) REFERENCES empleado(id_empleado)
+);
+
+SELECT*FROM producto_precio;
+
+-- Relación Producto-Insumo (recetas)
 CREATE TABLE producto_insumo (
-  id_producto INT, -- Asocian
-  id_insumo INT, -- Estos dos
+  id_producto INT,
+  id_insumo INT,
   cant_por_insumo FLOAT NOT NULL,
-  id_tipo_cantidad INT NOT NULL, -- Solo se Referencia para el nombre tipo cantidad
+  id_tipo_cantidad INT NOT NULL,
   PRIMARY KEY (id_producto, id_insumo),
   FOREIGN KEY (id_producto) REFERENCES producto(id_producto),
   FOREIGN KEY (id_insumo) REFERENCES insumo(id_insumo),
   FOREIGN KEY (id_tipo_cantidad) REFERENCES tipo_cantidad(id_tipo_cantidad)
 );
 
--- Tabla producto_final (historial de precios por producto) REVISAR
-CREATE TABLE producto_final (
-  id_precio_producto INT PRIMARY KEY AUTO_INCREMENT,  -- Se genera a partir de id producto para asociar un nuevo producto final con precio
-  precio_de_productos FLOAT NOT NULL,
-  fec_inicio TIMESTAMP NOT NULL,
-  fec_fin DATE NULL,
-  id_producto INT NOT NULL,
-  FOREIGN KEY (id_producto) REFERENCES producto(id_producto)
-);
-
--- Tabla pedido (MODIFICADO: Se eliminó id_boleta y su clave foránea para romper la dependencia circular)
+SELECT*FROM producto_insumo;
+-- PEDIDOS Y VENTAS
+-- Tabla de Pedidos
 CREATE TABLE pedido (
-  id_pedido INT PRIMARY KEY,
+  id_pedido INT PRIMARY KEY AUTO_INCREMENT,
   mesa INT NOT NULL,
   sala VARCHAR(20),
-  estado ENUM('pendiente', 'cancelado') NOT NULL
+  estado ENUM('pendiente', 'completado') NOT NULL
 );
 
--- Tabla boleta
+-- Tabla de Boletas
 CREATE TABLE boleta (
-  id_boleta INT PRIMARY KEY,
+  id_boleta INT PRIMARY KEY AUTO_INCREMENT,
   fec_boleta TIMESTAMP NOT NULL,
-  hora_boleta TIMESTAMP NOT NULL,
   nom_cliente VARCHAR(255) NOT NULL,
   dni_cliente INT NOT NULL,
   fec_pago TIMESTAMP NOT NULL,
   monto_pago FLOAT NOT NULL,
   met_pago VARCHAR(255) NOT NULL,
-  id_empleado INT NOT NULL, -- Esto sale del login
-  id_pedido INT NOT NULL ,  -- Esto ya se genero antes
+  id_empleado INT NOT NULL,
+  id_pedido INT NOT NULL,
   FOREIGN KEY (id_empleado) REFERENCES empleado(id_empleado),
-  FOREIGN KEY (id_pedido) REFERENCES pedido(id_pedido) -- Esta clave foránea ahora es válida ya que 'pedido' se puede crear primero.
+  FOREIGN KEY (id_pedido) REFERENCES pedido(id_pedido)
 );
 
--- Tabla subtotal
+-- Subtotales por pedido
 CREATE TABLE subtotal (
-  id_pedido INT NOT NULL, -- Se genera a partir del producto final y la cantidad
+  id_pedido INT NOT NULL,
   id_producto_final INT NOT NULL,
   cant_num_prod INT,
   comentario VARCHAR(255),
   PRIMARY KEY (id_pedido, id_producto_final),
   FOREIGN KEY (id_pedido) REFERENCES pedido(id_pedido),
-  FOREIGN KEY (id_producto_final) REFERENCES producto_final(id_precio_producto)
+  FOREIGN KEY (id_producto_final) REFERENCES producto(id_producto)
 );
+

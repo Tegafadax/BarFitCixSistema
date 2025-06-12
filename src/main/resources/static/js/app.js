@@ -2198,43 +2198,107 @@ function configurarEventListenersEdicion() {
 
     console.log('✅ Event listeners de edición configurados');
 }
+
+function focusNuevoPrecio() {
+    // Focus en el input de nuevo precio
+    const nuevoPrecioInput = document.getElementById('nuevoPrecioProducto');
+    if (nuevoPrecioInput) {
+        setTimeout(() => {
+            nuevoPrecioInput.focus();
+            nuevoPrecioInput.select();
+        }, 100);
+    }
+}
+
+function submitFormCambioPrecio(e) {
+    e.preventDefault();
+    confirmarCambioPrecio();
+}
+
+function validarPrecioEnTiempoRealCambioPrecio() {
+    const nuevoPrecioInput = document.getElementById('nuevoPrecioProducto');
+    const botonConfirmar = document.querySelector('#cambiarPrecioModal .btn-primary');
+
+    if (!nuevoPrecioInput || !botonConfirmar) return;
+
+    const nuevoPrecio = parseFloat(nuevoPrecioInput.value);
+    const precioActual = productoSeleccionadoPrecio ? productoSeleccionadoPrecio.precioActual : 0;
+
+    // Validar que el precio sea válido y diferente
+    const esValido = nuevoPrecio > 0 && Math.abs(nuevoPrecio - precioActual) >= 0.01;
+
+    // Habilitar/deshabilitar botón
+    botonConfirmar.disabled = !esValido;
+
+    // Cambiar color del input según validez
+    if (nuevoPrecio <= 0) {
+        nuevoPrecioInput.classList.add('is-invalid');
+        nuevoPrecioInput.classList.remove('is-valid');
+    } else if (Math.abs(nuevoPrecio - precioActual) < 0.01) {
+        nuevoPrecioInput.classList.add('is-invalid');
+        nuevoPrecioInput.classList.remove('is-valid');
+    } else {
+        nuevoPrecioInput.classList.add('is-valid');
+        nuevoPrecioInput.classList.remove('is-invalid');
+    }
+}
+
 // ===================== FUNCIÓN PARA CONFIGURAR EVENT LISTENERS =====================
 function configurarEventListenersCambioPrecio() {
+    console.log('⚙️ Configurando event listeners de cambio de precio...');
+
     // Event listener para el modal cuando se abre
     const modal = document.getElementById('cambiarPrecioModal');
     if (modal) {
-        modal.addEventListener('shown.bs.modal', function() {
-            // Focus en el input de nuevo precio
-            const nuevoPrecioInput = document.getElementById('nuevoPrecioProducto');
-            if (nuevoPrecioInput) {
-                nuevoPrecioInput.focus();
-                nuevoPrecioInput.select();
-            }
-        });
+        // Remover listeners existentes para evitar duplicados
+        modal.removeEventListener('shown.bs.modal', focusNuevoPrecio);
+        modal.removeEventListener('hidden.bs.modal', limpiarFormularioCambioPrecio);
 
-        modal.addEventListener('hidden.bs.modal', function() {
-            // Limpiar cuando se cierra
-            limpiarFormularioCambioPrecio();
-        });
+        // Agregar listeners
+        modal.addEventListener('shown.bs.modal', focusNuevoPrecio);
+        modal.addEventListener('hidden.bs.modal', limpiarFormularioCambioPrecio);
     }
 
     // Event listener para validación en tiempo real
     const nuevoPrecioInput = document.getElementById('nuevoPrecioProducto');
     if (nuevoPrecioInput) {
-        nuevoPrecioInput.addEventListener('input', validarPrecioEnTiempoReal);
-        nuevoPrecioInput.addEventListener('blur', validarPrecioEnTiempoReal);
+        // Remover listener existente
+        nuevoPrecioInput.removeEventListener('input', validarPrecioEnTiempoReal);
+        nuevoPrecioInput.removeEventListener('blur', validarPrecioEnTiempoReal);
+
+        // Agregar listeners
+        nuevoPrecioInput.addEventListener('input', validarPrecioEnTiempoRealCambioPrecio);
+        nuevoPrecioInput.addEventListener('blur', validarPrecioEnTiempoRealCambioPrecio);
     }
 
     // Event listener para el formulario (prevenir submit default)
     const form = document.getElementById('cambiarPrecioForm');
     if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            confirmarCambioPrecio();
-        });
+        // Remover listener existente
+        form.removeEventListener('submit', submitFormCambioPrecio);
+
+        // Agregar listener
+        form.addEventListener('submit', submitFormCambioPrecio);
     }
 
-    console.log('⚙️ Event listeners de cambio de precio configurados');
+    // IMPORTANTE: Asegurar que el botón tenga el onclick correcto
+    const botonActualizar = document.querySelector('#cambiarPrecioModal .btn-primary');
+    if (botonActualizar) {
+        // Remover onclick anterior
+        botonActualizar.removeAttribute('onclick');
+
+        // Remover event listeners anteriores
+        botonActualizar.removeEventListener('click', confirmarCambioPrecio);
+
+        // Agregar nuevo event listener
+        botonActualizar.addEventListener('click', confirmarCambioPrecio);
+
+        console.log('✅ Event listener del botón configurado');
+    } else {
+        console.error('❌ No se encontró el botón de actualizar precio');
+    }
+
+    console.log('✅ Event listeners de cambio de precio configurados');
 }
 // ===================== FUNCIONES DE INTERFAZ =====================
 function mostrarCargandoTabla(mostrar) {
@@ -2685,6 +2749,13 @@ async function confirmarCambioPrecio() {
         const nuevoPrecio = parseFloat(document.getElementById('nuevoPrecioProducto').value);
         const motivo = document.getElementById('motivoCambioPrecio').value.trim();
 
+        console.log('📝 Datos del cambio de precio:', {
+            idProducto,
+            nuevoPrecio,
+            motivo,
+            productoSeleccionado: productoSeleccionadoPrecio
+        });
+
         // Validaciones
         if (!idProducto || idProducto <= 0) {
             mostrarError('ID de producto inválido');
@@ -2696,17 +2767,23 @@ async function confirmarCambioPrecio() {
             return;
         }
 
-        if (productoSeleccionadoPrecio && nuevoPrecio === productoSeleccionadoPrecio.precioActual) {
+        if (productoSeleccionadoPrecio && Math.abs(nuevoPrecio - productoSeleccionadoPrecio.precioActual) < 0.01) {
             mostrarError('El nuevo precio debe ser diferente al precio actual');
             return;
         }
 
         // Confirmar el cambio con el usuario
-        const mensaje = `¿Está seguro de cambiar el precio de "${productoSeleccionadoPrecio.nomProducto}"?
+        const nombreProducto = productoSeleccionadoPrecio ? productoSeleccionadoPrecio.nomProducto : 'Producto';
+        const precioActual = productoSeleccionadoPrecio ? productoSeleccionadoPrecio.precioActual : 0;
 
-Precio actual: S/. ${(productoSeleccionadoPrecio.precioActual || 0).toFixed(2)}
+        const mensaje = `¿Está seguro de cambiar el precio de "${nombreProducto}"?
+
+Precio actual: S/. ${precioActual.toFixed(2)}
 Nuevo precio: S/. ${nuevoPrecio.toFixed(2)}
-${motivo ? `Motivo: ${motivo}` : ''}`;
+Diferencia: S/. ${(nuevoPrecio - precioActual).toFixed(2)}
+${motivo ? `\nMotivo: ${motivo}` : ''}
+
+Este cambio se registrará en el historial.`;
 
         if (!confirm(mensaje)) {
             console.log('👤 Usuario canceló el cambio de precio');
@@ -2715,67 +2792,72 @@ ${motivo ? `Motivo: ${motivo}` : ''}`;
 
         // Deshabilitar botón mientras se procesa
         const botonConfirmar = document.querySelector('#cambiarPrecioModal .btn-primary');
-        const textoOriginal = botonConfirmar.innerHTML;
-        botonConfirmar.disabled = true;
-        botonConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Actualizando...';
+        if (botonConfirmar) {
+            const textoOriginal = botonConfirmar.innerHTML;
+            botonConfirmar.disabled = true;
+            botonConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Actualizando...';
 
-        // Preparar datos para la API
-        const cambiarPrecioDTO = {
-            idProducto: idProducto,
-            nuevoPrecio: nuevoPrecio,
-            idEmpleado: 1, // TODO: Obtener del usuario logueado
-            motivo: motivo || 'Actualización de precio desde interfaz web'
-        };
+            try {
+                // Preparar datos para la API
+                const cambiarPrecioDTO = {
+                    idProducto: idProducto,
+                    nuevoPrecio: nuevoPrecio,
+                    idEmpleado: 1, // TODO: Obtener del usuario logueado
+                    motivo: motivo || 'Actualización de precio desde interfaz web'
+                };
 
-        console.log('📤 Enviando cambio de precio:', cambiarPrecioDTO);
+                console.log('📤 Enviando cambio de precio:', cambiarPrecioDTO);
 
-        // Llamar al endpoint
-        const response = await fetch(`${PRODUCTO_API_URL}/cambiar-precio`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(cambiarPrecioDTO)
-        });
+                // Llamar al endpoint
+                const response = await fetch(`${PRODUCTO_API_URL}/cambiar-precio`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(cambiarPrecioDTO)
+                });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.mensaje || `Error HTTP: ${response.status}`);
+                console.log('📨 Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('❌ Error response:', errorData);
+                    throw new Error(errorData.mensaje || errorData.error || `Error HTTP: ${response.status}`);
+                }
+
+                const resultado = await response.json();
+                console.log('✅ Precio cambiado exitosamente:', resultado);
+
+                // Mostrar éxito
+                mostrarExito(`Precio actualizado exitosamente a S/. ${nuevoPrecio.toFixed(2)}`);
+
+                // Cerrar modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('cambiarPrecioModal'));
+                if (modal) {
+                    modal.hide();
+                }
+
+                // Limpiar formulario
+                limpiarFormularioCambioPrecio();
+
+                // Recargar datos de productos para reflejar el cambio
+                await cargarProductos();
+
+                console.log('🔄 Datos actualizados después del cambio de precio');
+
+            } finally {
+                // Restaurar botón
+                botonConfirmar.disabled = false;
+                botonConfirmar.innerHTML = textoOriginal;
+            }
         }
-
-        const resultado = await response.json();
-        console.log('✅ Precio cambiado exitosamente:', resultado);
-
-        // Mostrar éxito
-        mostrarExito(`Precio actualizado exitosamente a S/. ${nuevoPrecio.toFixed(2)}`);
-
-        // Cerrar modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('cambiarPrecioModal'));
-        if (modal) {
-            modal.hide();
-        }
-
-        // Limpiar formulario
-        limpiarFormularioCambioPrecio();
-
-        // Recargar datos de productos para reflejar el cambio
-        await cargarProductos();
-
-        console.log('🔄 Datos actualizados después del cambio de precio');
 
     } catch (error) {
         console.error('❌ Error al cambiar precio:', error);
         mostrarError(`Error al cambiar el precio: ${error.message}`);
-
-    } finally {
-        // Restaurar botón
-        const botonConfirmar = document.querySelector('#cambiarPrecioModal .btn-primary');
-        if (botonConfirmar) {
-            botonConfirmar.disabled = false;
-            botonConfirmar.innerHTML = '<i class="bi bi-check-lg me-1"></i>Actualizar Precio';
-        }
     }
 }
+
 function mostrarError(mensaje) {
     console.error('❌ ' + mensaje);
     alert('❌ ' + mensaje);
@@ -3349,6 +3431,31 @@ window.mostrarError = mostrarError;
 window.mostrarExito = mostrarExito;
 window.actualizarTituloFormulario = actualizarTituloFormulario;
 window.mostrarAyudaContextual = mostrarAyudaContextual;
+window.debugCambioPrecio = function() {
+    console.log('🐛 DEBUG CAMBIO DE PRECIO:');
+    console.log('1. Modal:', !!document.getElementById('cambiarPrecioModal'));
+    console.log('2. Botón:', !!document.querySelector('#cambiarPrecioModal .btn-primary'));
+    console.log('3. Formulario:', !!document.getElementById('cambiarPrecioForm'));
+    console.log('4. Input precio:', !!document.getElementById('nuevoPrecioProducto'));
+    console.log('5. Producto seleccionado:', productoSeleccionadoPrecio);
 
+    const boton = document.querySelector('#cambiarPrecioModal .btn-primary');
+    if (boton) {
+        console.log('6. Botón onclick:', boton.getAttribute('onclick'));
+        console.log('7. Botón disabled:', boton.disabled);
+        console.log('8. Botón text:', boton.textContent);
+    }
+
+    return {
+        modal: !!document.getElementById('cambiarPrecioModal'),
+        boton: !!document.querySelector('#cambiarPrecioModal .btn-primary'),
+        producto: productoSeleccionadoPrecio
+    };
+};
+
+// ===================== EXPORTAR FUNCIONES CORREGIDAS =====================
+window.confirmarCambioPrecio = confirmarCambioPrecio;
+window.configurarEventListenersCambioPrecio = configurarEventListenersCambioPrecio;
+window.validarPrecioEnTiempoRealCambioPrecio = validarPrecioEnTiempoRealCambioPrecio;
 
 });
