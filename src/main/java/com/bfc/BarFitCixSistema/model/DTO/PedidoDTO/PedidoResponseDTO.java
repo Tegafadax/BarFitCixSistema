@@ -6,8 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * DTO para enviar la información completa de un pedido al frontend.
- * Ideal para la vista de "Resumen de Pedido" o para cargar un pedido existente.
+ * DTO para devolver la información completa de un pedido.
  */
 @Data
 public class PedidoResponseDTO {
@@ -20,9 +19,6 @@ public class PedidoResponseDTO {
     private BigDecimal totalPedido;
     private List<SubtotalResponseDTO> detalles;
 
-    /**
-     * DTO anidado para representar cada producto dentro de la respuesta del pedido.
-     */
     @Data
     public static class SubtotalResponseDTO {
         private Integer idProducto;

@@ -5,21 +5,20 @@ import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
 /**
- * DTO para manejar la solicitud de actualizar la cantidad de un producto
- * dentro de un pedido existente.
+ * DTO para actualizar la cantidad de un producto en un pedido existente.
  */
 @Data
 public class ActualizarCantidadRequestDTO {
 
-    @NotNull(message = "El ID del pedido es obligatorio.")
+    @NotNull
     @Positive
     private Integer idPedido;
 
-    @NotNull(message = "El ID del producto es obligatorio.")
+    @NotNull
     @Positive
     private Integer idProducto;
 
-    @NotNull(message = "La nueva cantidad es obligatoria.")
-    @Positive(message = "La cantidad debe ser mayor a cero.")
+    @NotNull
+    @Positive
     private Integer nuevaCantidad;
 }

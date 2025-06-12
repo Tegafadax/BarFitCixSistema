@@ -16,5 +16,4 @@ public interface BoletaService {
      * @return Una lista de DTOs con la información de cada boleta creada.
      */
     List<BoletaResponseDTO> generarBoletas(CrearBoletaRequestDTO requestDTO);
-
 }

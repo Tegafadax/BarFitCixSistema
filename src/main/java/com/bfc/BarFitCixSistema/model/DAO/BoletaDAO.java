@@ -6,12 +6,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repositorio para la entidad Boleta.
+ */
 @Repository
 public interface BoletaDAO extends JpaRepository<Boleta, Integer> {
 
     /**
      * Busca todas las boletas asociadas a un ID de pedido específico.
-     * Útil para verificar si ya se generaron boletas para un pedido.
      *
      * @param idPedido El ID del pedido.
      * @return Una lista de boletas asociadas a ese pedido.

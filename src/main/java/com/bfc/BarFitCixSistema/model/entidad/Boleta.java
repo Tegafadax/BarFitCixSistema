@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -28,17 +29,20 @@ public class Boleta implements Serializable {
     @Column(name = "fec_boleta", nullable = false)
     private LocalDateTime fechaBoleta;
 
+    // CORRECCIÓN: Se añade el campo faltante.
+    @Column(name = "fec_pago", nullable = false)
+    private LocalDateTime fechaPago;
+
     @Column(name = "nom_cliente", nullable = false)
     private String nombreCliente;
 
     @Column(name = "dni_cliente", nullable = false)
     private int dniCliente;
 
-    @Column(name = "fec_pago", nullable = false)
-    private LocalDateTime fechaPago;
-
-    @Column(name = "monto_pago", nullable = false)
-    private float montoPago;
+    // NOTA: Usamos BigDecimal para montos de dinero por su precisión,
+    // aunque la tabla use FLOAT. JPA/Hibernate manejará la conversión.
+    @Column(name = "monto_pago", nullable = false, precision = 10, scale = 2)
+    private BigDecimal montoPago;
 
     @Column(name = "met_pago", nullable = false)
     private String metodoPago;
@@ -47,7 +51,8 @@ public class Boleta implements Serializable {
     @JoinColumn(name = "id_empleado", nullable = false)
     private Empleado empleado;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_pedido", nullable = false, unique = true)
+    // Muchas boletas pueden pertenecer a un mismo pedido.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_pedido", nullable = false)
     private Pedido pedido;
 }

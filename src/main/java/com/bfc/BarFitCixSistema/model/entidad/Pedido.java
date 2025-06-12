@@ -45,13 +45,15 @@ public class Pedido implements Serializable {
     @JoinColumn(name = "id_empleado", nullable = false)
     private Empleado empleado;
 
-    // Relación con los detalles del pedido (Subtotal)
+    // Relación con los detalles del pedido (Subtotal).
+    // CascadeType.ALL: Si se guarda/elimina un Pedido, sus Subtotales también.
+    // orphanRemoval = true: Si se quita un Subtotal de esta lista, se elimina de la BD.
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Subtotal> detalles;
 
-    // Relación con la boleta
-    @OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Boleta boleta;
+    // Un pedido puede tener MUCHAS boletas (para pagos fraccionados).
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Boleta> boletas;
 
     public enum PedidoStatus {
         pendiente,

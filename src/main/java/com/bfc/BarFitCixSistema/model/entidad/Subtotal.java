@@ -10,6 +10,7 @@ import java.io.Serializable;
 
 /**
  * Representa la tabla de unión "subtotal", que contiene los detalles de cada pedido.
+ * Utiliza @EmbeddedId para la clave compuesta.
  */
 @Data
 @AllArgsConstructor
@@ -25,16 +26,22 @@ public class Subtotal implements Serializable {
     @Column(name = "cant_num_prod")
     private Integer cantidad;
 
-    @Column(name = "comentario")
+    @Column(name = "comentario", length = 255)
     private String comentario;
 
+    // Relación con Pedido.
+    // @MapsId se usa para indicar que el campo "idPedido" de la clave compuesta (id)
+    // se mapea a esta relación.
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("idPedido") // Mapea la propiedad "idPedido" de la PK embebida
+    @MapsId("idPedido")
     @JoinColumn(name = "id_pedido")
     private Pedido pedido;
 
+    // Relación con Producto.
+    // @MapsId se usa para indicar que el campo "idProducto" de la clave compuesta (id)
+    // se mapea a esta relación.
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("idProducto") // Mapea la propiedad "idProducto" de la PK embebida
+    @MapsId("idProducto")
     @JoinColumn(name = "id_producto_final")
     private Producto producto;
 }

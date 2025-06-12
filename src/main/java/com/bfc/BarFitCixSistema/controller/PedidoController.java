@@ -1,5 +1,4 @@
 package com.bfc.BarFitCixSistema.controller;
-
 import com.bfc.BarFitCixSistema.model.DTO.PedidoDTO.*;
 import com.bfc.BarFitCixSistema.model.service.PedidoService;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,7 +24,6 @@ public class PedidoController {
 
     /**
      * Endpoint para crear un nuevo pedido.
-     * Recibe los datos del pedido y sus detalles en el cuerpo de la solicitud.
      */
     @PostMapping
     public ResponseEntity<?> crearPedido(@Valid @RequestBody CrearPedidoDTO dto) {
@@ -41,7 +39,6 @@ public class PedidoController {
 
     /**
      * Endpoint para obtener la lista de todos los pedidos para el historial.
-     * La lista se devuelve ordenada por estado (pendientes primero) y luego por fecha.
      */
     @GetMapping
     public ResponseEntity<List<PedidoHistorialDTO>> listarPedidosHistorial() {
@@ -63,7 +60,7 @@ public class PedidoController {
     }
 
     /**
-     * Endpoint para finalizar un pedido, cambiando su estado a 'completado'.
+     * Endpoint para finalizar un pedido.
      */
     @PutMapping("/{id}/finalizar")
     public ResponseEntity<?> finalizarPedido(@PathVariable Integer id) {
@@ -73,13 +70,12 @@ public class PedidoController {
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         } catch (IllegalStateException e) {
-            // Se usa para casos como "el pedido ya está finalizado".
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 
     /**
-     * Endpoint para actualizar la cantidad de un producto dentro de un pedido.
+     * Endpoint para actualizar la cantidad de un producto en un pedido.
      */
     @PutMapping("/actualizar-cantidad")
     public ResponseEntity<?> actualizarCantidad(@Valid @RequestBody ActualizarCantidadRequestDTO dto) {
@@ -92,7 +88,7 @@ public class PedidoController {
     }
 
     /**
-     * Endpoint para actualizar el comentario de un producto dentro de un pedido.
+     * Endpoint para actualizar el comentario de un producto en un pedido.
      */
     @PutMapping("/actualizar-comentario")
     public ResponseEntity<?> actualizarComentario(@Valid @RequestBody ActualizarComentarioRequestDTO dto) {
@@ -105,7 +101,7 @@ public class PedidoController {
     }
 
     /**
-     * Endpoint para eliminar un pedido por su ID.
+     * Endpoint para eliminar un pedido.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarPedido(@PathVariable Integer id) {

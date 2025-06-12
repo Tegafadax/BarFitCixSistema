@@ -1,5 +1,4 @@
 package com.bfc.BarFitCixSistema.model.service.Impl;
-
 import com.bfc.BarFitCixSistema.model.DAO.EmpleadoDAO;
 import com.bfc.BarFitCixSistema.model.DAO.PedidoDAO;
 import com.bfc.BarFitCixSistema.model.DAO.ProductoDAO;
@@ -17,7 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor // Inyección de dependencias por constructor de Lombok
+@RequiredArgsConstructor
 public class PedidoServiceImpl implements PedidoService {
 
     private final PedidoDAO pedidoDAO;
@@ -27,46 +26,37 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     @Transactional
     public PedidoResponseDTO crearPedido(CrearPedidoDTO dto) {
-        // Buscar al empleado que está creando el pedido
         Empleado empleado = empleadoDAO.findById(dto.getIdEmpleado())
                 .orElseThrow(() -> new EntityNotFoundException("Empleado no encontrado con ID: " + dto.getIdEmpleado()));
 
-        // Crear la entidad Pedido principal
         Pedido pedido = new Pedido();
         pedido.setMesa(dto.getMesa());
         pedido.setSala(dto.getSala());
         pedido.setEmpleado(empleado);
-        pedido.setEstado(Pedido.PedidoStatus.pendiente); // Estado inicial
+        pedido.setEstado(Pedido.PedidoStatus.pendiente);
         pedido.setDetalles(new ArrayList<>());
 
-        // Procesar cada producto del pedido
         for (CrearPedidoDTO.PedidoDetalleDTO detalleDTO : dto.getDetalles()) {
             Producto producto = productoDAO.findById(detalleDTO.getIdProducto())
                     .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + detalleDTO.getIdProducto()));
 
-            // Crear el subtotal (detalle del pedido)
             Subtotal subtotal = new Subtotal();
-            subtotal.setId(new PedidoSubtotalPK(null, producto.getIdProducto())); // El ID del pedido se asignará por la relación
+            subtotal.setId(new PedidoSubtotalPK(null, producto.getIdProducto()));
             subtotal.setPedido(pedido);
             subtotal.setProducto(producto);
             subtotal.setCantidad(detalleDTO.getCantidad());
             subtotal.setComentario(detalleDTO.getComentario());
 
-            // Añadir el detalle a la lista del pedido
             pedido.getDetalles().add(subtotal);
         }
 
-        // Guardar el pedido (gracias a CascadeType.ALL, los subtotales se guardarán también)
         Pedido pedidoGuardado = pedidoDAO.save(pedido);
-
-        // Convertir la entidad guardada a un DTO de respuesta y devolver
         return convertirAPedidoResponseDTO(pedidoGuardado);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<PedidoHistorialDTO> listarPedidosHistorial() {
-        // Se utiliza el nuevo método del DAO que ordena por estado y fecha
         List<Pedido> pedidos = pedidoDAO.findAllOrderedByStatusAndDate();
         return pedidos.stream()
                 .map(this::convertirAPedidoHistorialDTO)
@@ -139,8 +129,6 @@ public class PedidoServiceImpl implements PedidoService {
         pedidoDAO.deleteById(id);
     }
 
-    // --- MÉTODOS PRIVADOS DE CONVERSIÓN ---
-
     private PedidoResponseDTO convertirAPedidoResponseDTO(Pedido pedido) {
         PedidoResponseDTO dto = new PedidoResponseDTO();
         dto.setIdPedido(pedido.getIdPedido());
@@ -149,6 +137,10 @@ public class PedidoServiceImpl implements PedidoService {
         dto.setFechaCreacion(pedido.getFechaCreacion());
         dto.setEstado(pedido.getEstado().name());
         dto.setNombreEmpleado(pedido.getEmpleado().getNom_empleado());
+
+        if (pedido.getDetalles() == null) {
+            pedido.setDetalles(new ArrayList<>());
+        }
 
         List<PedidoResponseDTO.SubtotalResponseDTO> detallesDTO = pedido.getDetalles().stream()
                 .map(detalle -> {
@@ -174,7 +166,6 @@ public class PedidoServiceImpl implements PedidoService {
 
         dto.setDetalles(detallesDTO);
 
-        // Calcular el total del pedido
         BigDecimal total = detallesDTO.stream()
                 .map(PedidoResponseDTO.SubtotalResponseDTO::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -192,7 +183,10 @@ public class PedidoServiceImpl implements PedidoService {
         dto.setFecha(pedido.getFechaCreacion());
         dto.setEstado(pedido.getEstado().name().toUpperCase());
 
-        // Calcular total para el historial
+        if (pedido.getDetalles() == null) {
+            pedido.setDetalles(new ArrayList<>());
+        }
+
         BigDecimal total = pedido.getDetalles().stream()
                 .map(d -> {
                     ProductoPrecio precio = d.getProducto().getPrecioActual();

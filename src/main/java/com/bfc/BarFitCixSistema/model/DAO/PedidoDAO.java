@@ -11,8 +11,7 @@ import java.util.Optional;
 
 /**
  * Repositorio para la entidad Pedido.
- * Proporciona métodos para realizar operaciones CRUD y consultas personalizadas
- * en la tabla de pedidos.
+ * Proporciona métodos para realizar operaciones CRUD y consultas personalizadas.
  */
 @Repository
 public interface PedidoDAO extends JpaRepository<Pedido, Integer> {
@@ -28,8 +27,7 @@ public interface PedidoDAO extends JpaRepository<Pedido, Integer> {
 
     /**
      * Busca un pedido por su ID y carga ansiosamente (eagerly) sus detalles (subtotales)
-     * y la información del empleado asociado. Esto es para evitar problemas de
-     * carga perezosa (Lazy Loading) al acceder a los detalles fuera de una transacción.
+     * y la información del empleado asociado.
      *
      * @param id El ID del pedido a buscar.
      * @return Un Optional que contiene el Pedido con sus detalles, si se encuentra.
@@ -42,17 +40,7 @@ public interface PedidoDAO extends JpaRepository<Pedido, Integer> {
     Optional<Pedido> findByIdWithDetails(@Param("id") Integer id);
 
     /**
-     * Busca todos los pedidos que se encuentran en un estado específico (ej. "pendiente").
-     *
-     * @param estado El estado del pedido a buscar.
-     * @return Una lista de pedidos que coinciden con el estado.
-     */
-    List<Pedido> findByEstado(Pedido.PedidoStatus estado);
-
-    /**
      * Busca todos los pedidos atendidos por un empleado específico.
-     * CORRECCIÓN: Se usa @Query para apuntar explícitamente al campo 'id_empleado'
-     * y se renombra el método para mayor claridad.
      *
      * @param idEmpleado El ID del empleado.
      * @return Una lista de pedidos asociados a ese empleado.

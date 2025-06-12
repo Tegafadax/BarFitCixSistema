@@ -11,6 +11,7 @@ import java.util.Objects;
 
 /**
  * Representa la clave primaria compuesta para la entidad Subtotal.
+ * Es una clase "embebida" que contiene los campos que forman la clave.
  */
 @Data
 @AllArgsConstructor
